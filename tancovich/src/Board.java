@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -13,21 +14,27 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import sun.audio.*;
+import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Board extends JPanel implements ActionListener {
 
+	private static final long serialVersionUID = 1L;
+	private BufferedImage background;
     private Timer timer;
-    private Tank tank;
     private List<Enemy> enemies;
     private boolean ingame;
     private final int ICRAFT_X = 40;
     private final int ICRAFT_Y = 60;
-    private final int B_WIDTH = 400;
-    private final int B_HEIGHT = 300;
+    private final int B_WIDTH = 800;
+    private final int B_HEIGHT = 600;
     private final int DELAY = 15;
+    private Tank tank;
 
     private final int[][] pos = {
+    		
             {2380, 29}, {2500, 59}, {1380, 89},
             {780, 109}, {580, 139}, {680, 239},
             {790, 259}, {760, 50}, {790, 150},
@@ -40,7 +47,12 @@ public class Board extends JPanel implements ActionListener {
     };
 
     public Board() {
-
+    	
+    	try {        	
+        	background = ImageIO.read(getClass().getResourceAsStream("Resources/track.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+        }
         initBoard();
     }
 
@@ -48,7 +60,8 @@ public class Board extends JPanel implements ActionListener {
 
         addKeyListener(new TAdapter());
         setFocusable(true);
-        setBackground(Color.BLACK);
+        
+        
         ingame = true;
 
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
@@ -73,7 +86,9 @@ public class Board extends JPanel implements ActionListener {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+        
+        drawBackground(g);
+        
         if (ingame) {
 
             drawObjects(g);
@@ -84,6 +99,11 @@ public class Board extends JPanel implements ActionListener {
         }
 
         Toolkit.getDefaultToolkit().sync();
+    }
+    
+    private void drawBackground(Graphics g)
+    {
+    	g.drawImage(background, 0, 0, null);
     }
 
     private void drawObjects(Graphics g) {

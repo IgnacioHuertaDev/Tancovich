@@ -1,6 +1,6 @@
 public class Missile extends Sprite {
 
-    private final int BOARD_WIDTH = 390;
+    private final int BOARD_WIDTH = 800;
     private final int MISSILE_SPEED = 2;
 
     public Missile(int x, int y) {
@@ -11,7 +11,7 @@ public class Missile extends Sprite {
 
     private void initMissile() {
 
-        loadImage("src/Resources/bulletDark1.png");
+        loadImage("tancovich/src/Resources/bulletDark1.png");
         getImageDimensions();
     }
 
