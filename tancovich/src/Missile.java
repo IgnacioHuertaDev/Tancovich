@@ -2,10 +2,12 @@ public class Missile extends Sprite {
 
     private final int BOARD_WIDTH = 800;
     private final int BOARD_HEIGHT = 600;
-    private final int MISSILE_SPEED = 4;
+    private final int MISSILE_SPEED = 8;
+    private int shootedBy;
 
-    public Missile(int x, int y, int r) {
+    public Missile(int x, int y, int r, int shootedBy) {
         super(x, y, r);
+        setShootedBy(shootedBy);
         initMissile();
     }
 
@@ -26,5 +28,13 @@ public class Missile extends Sprite {
         
         if (y < 0 || y > BOARD_HEIGHT)
             visible = false;
+    }
+    
+    public int getShootedBy() {
+    	return shootedBy;
+    }
+    
+    public void setShootedBy(int id) {
+    	shootedBy = id;
     }
 }

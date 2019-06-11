@@ -1,3 +1,4 @@
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,10 +131,43 @@ public class Tank extends Sprite {
     
     public void fire()
     {       
-    	missiles.add(new Missile(x + width / 2, y + height / 2, this.r));
+    	missiles.add(new Missile(x + width / 2, y + height / 2, this.r, id));
     }
     
     public void plantMines() {
     	mines.add(new Mine(x + width / 2, y + height /2));
+    }
+    
+    public int getId(){
+    	return id;
+    }
+    
+public void destroyTank() {
+        
+		loadImage("Resources/explosion2.png");
+		getImageDimensions();
+    	
+    	List<Image> explosion = new ArrayList<Image>();
+    		
+    		loadImage("Resources/explosion1.png");
+    		explosion.add(getImage());
+    		getImageDimensions();
+    		
+    		loadImage("Resources/explosion2.png");
+    		explosion.add(getImage());
+    		getImageDimensions();
+
+    		loadImage("Resources/explosion3.png");
+    		explosion.add(getImage());
+    		getImageDimensions();
+
+    		loadImage("Resources/explosion4.png");
+    		explosion.add(getImage());
+    		getImageDimensions();
+
+    		loadImage("Resources/explosion5.png");
+    		explosion.add(getImage());
+    		getImageDimensions();
+
     }
 }

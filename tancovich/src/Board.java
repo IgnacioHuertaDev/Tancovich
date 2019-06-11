@@ -29,7 +29,7 @@ public class Board extends JPanel implements ActionListener {
     private final int DELAY = 30;
     private BufferedImage background;
     private List<Tank> tanks;
-    private List<Enemy> enemies;
+    //private List<Enemy> enemies;
     
 private final int[][] tankPositions = {
     		
@@ -37,7 +37,7 @@ private final int[][] tankPositions = {
             {2, 760, 540}
     };
 
-    private final int[][] enemyPositions = {
+    /*private final int[][] enemyPositions = {
     		
             {2380, 29}, {2500, 59}, {1380, 89},
             {780, 109}, {580, 139}, {680, 239},
@@ -48,7 +48,7 @@ private final int[][] tankPositions = {
             {900, 259}, {660, 50}, {540, 90},
             {810, 220}, {860, 20}, {740, 180},
             {820, 128}, {490, 170}, {700, 30}
-    };
+    };*/
 
     public Board() {
     	
@@ -64,7 +64,7 @@ private final int[][] tankPositions = {
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
 
         initTanks();
-        initEnemies();
+        //initEnemies();
 
         timer = new Timer(DELAY, this);
         timer.start();
@@ -79,14 +79,14 @@ private final int[][] tankPositions = {
         }
     }
 
-    public void initEnemies() {
+    /*public void initEnemies() {
 
         enemies = new ArrayList<>();
 
         for (int[] p : enemyPositions) {
             enemies.add(new Enemy(p[0], p[1]));
         }
-    }
+    }*/
 
     @Override
     public void paintComponent(Graphics g) {
@@ -129,8 +129,9 @@ private final int[][] tankPositions = {
 
             for (Missile missile : ms) {
                 if (missile.isVisible()) {
-                	
-                    g.drawImage(missile.getImage(), missile.getX(), missile.getY(), this);
+                	if(ms.size() < 5) {
+                		g.drawImage(missile.getImage(), missile.getX(), missile.getY(), this);
+                	}                    
                 }
             }
             
@@ -144,7 +145,7 @@ private final int[][] tankPositions = {
             }
     	}        
 
-        for (Enemy enemy : enemies) {
+       /* for (Enemy enemy : enemies) {
             if (enemy.isVisible()) {
             	
                 g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
@@ -156,13 +157,13 @@ private final int[][] tankPositions = {
         }
 
         g.setColor(Color.WHITE);
-        g.drawString("Enemies left: " + enemies.size(), 5, 15);
+        g.drawString("Enemies left: " + enemies.size(), 5, 15);*/
     }
 
     private void drawGameOver(Graphics g) {
 
         String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
+        Font small = new Font("Helvetica", Font.BOLD, 24);
         FontMetrics fm = getFontMetrics(small);
 
         g.setColor(Color.white);
@@ -181,7 +182,7 @@ private final int[][] tankPositions = {
 	        updateMines(tank);
 	        checkCollisions(tank);
     	}
-        updateEnemies();
+        //updateEnemies();
         repaint();
     }
 
@@ -235,7 +236,7 @@ private final int[][] tankPositions = {
 
         Shape r3 = tank.getShape();
 
-        for (Enemy enemy : enemies) {
+        /*for (Enemy enemy : enemies) {
 
         	Shape r2 = enemy.getShape();
 
@@ -245,7 +246,7 @@ private final int[][] tankPositions = {
                 enemy.setVisible(false);
                 ingame = false;
             }
-        }
+        }*/
 
         List<Missile> ms = tank.getMissiles();
 
@@ -253,17 +254,19 @@ private final int[][] tankPositions = {
 
             Shape r1 = m.getShape();
 
-            for (Enemy enemy : enemies) {
+            for (Tank enemyTank : tanks) {
 
-                Shape r2 = enemy.getShape();
-
-                if (Sprite.testIntersection(r1,r2)) {
-                	
-                	m.setVisible(false);
-                    enemy.setVisible(false);
-                    
-                    enemy.destroyEnemy();
+                Shape r2 = enemyTank.getShape();
+                if(m.getShootedBy() != enemyTank.getId()) {
+                	if (Sprite.testIntersection(r1,r2)) {
+                    	
+                    	m.setVisible(false);
+                        enemyTank.setVisible(false);
+                        
+                        enemyTank.destroyTank();
+                    }
                 }
+                
             }
         }
 	       
@@ -274,7 +277,7 @@ private final int[][] tankPositions = {
 	
         	Shape r1 = mp.getShape();
 	
-	        for (Enemy enemy : enemies) {
+	        /*for (Enemy enemy : enemies) {
 	
 	        	Shape r2 = enemy.getShape();
 	
@@ -284,11 +287,11 @@ private final int[][] tankPositions = {
 	        		enemy.setVisible(false);
 	        		enemy.destroyEnemy();
 	        	}
-	        }
+	        }*/
         }
     }
     
-    private void updateEnemies() {
+    /*private void updateEnemies() {
 
         if (enemies.isEmpty()) {
 
@@ -306,7 +309,7 @@ private final int[][] tankPositions = {
                 enemies.remove(i);
             }
         }
-    }
+    }*/
     
     @Override
     protected void processKeyEvent(KeyEvent e) {
