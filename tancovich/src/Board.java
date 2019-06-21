@@ -3,37 +3,61 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import javax.imageio.ImageIO;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	private BufferedImage background;
-    private Timer timer;
-    private List<Enemy> enemies;
-    private boolean ingame;
-    private final int ICRAFT_X = 40;
-    private final int ICRAFT_Y = 60;
     private final int B_WIDTH = 800;
     private final int B_HEIGHT = 600;
-    private final int DELAY = 15;
-    private Tank tank;
+    private final int DELAY = 30;
+    
+    private BufferedImage background;
+    private boolean ingame;
+    private List<Tank> tanks;
+    private List<Enemy> enemies;
+    private List<BoxLevel> boxes;
+    private int lvl;
+    private List<ProgressBar> bars;
+    private Timer timer;
+    
+    private final int[][] boxesPositionLvlOne = {
+    		{292, 135, 54, 338},
+            {460, 133, 52, 340}
+    };
+    
+    private final int[][] boxesPositionLvlTwo = {
+    		{100, 40, 20, 50},
+            {140, 40, 20, 50}
+    };
+    
+    private final int[][] boxesPositionLvlThree = {
+    		{100, 40, 20, 50},
+            {140, 40, 20, 50}
+    };
+    
+    private final int[][] tankPositions = {
+    		
+            {1, 40, 60},
+            {2, 760, 540}
+    };
 
-    private final int[][] pos = {
+    private final int[][] enemyPositions = {
+    		
             {2380, 29}, {2500, 59}, {1380, 89},
             {780, 109}, {580, 139}, {680, 239},
             {790, 259}, {760, 50}, {790, 150},
@@ -45,46 +69,102 @@ public class Board extends JPanel implements ActionListener {
             {820, 128}, {490, 170}, {700, 30}
     };
 
+    public int getLvl() {
+    	return lvl;
+    }
+    
+    public void setLvl(int lvl) {
+    	this.lvl = lvl;
+    }
+    
     public Board() {
     	
-    	try {        	
-        	background = ImageIO.read(getClass().getResourceAsStream("Resources/track.jpg"));
-        } catch (IOException ex) {
-            Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-        }
         initBoard();
     }
 
     private void initBoard() {
 
-        addKeyListener(new TAdapter());
         setFocusable(true);
-        
+        setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         
         ingame = true;
+        
+        if(lvl == 0) {
+        	lvl = 1;
+        }
 
-        setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
-
-        tank = new Tank(ICRAFT_X, ICRAFT_Y);
-
+        initTanks();
         initEnemies();
+        initBars();
+        initBoxes();
 
         timer = new Timer(DELAY, this);
         timer.start();
+    }
+    
+    public void initTanks() {
+
+        tanks = new ArrayList<>();
+
+        for (int[] p : tankPositions) {
+        	tanks.add(new Tank(p[0], p[1], p[2]));
+        }
     }
 
     public void initEnemies() {
 
         enemies = new ArrayList<>();
 
-        for (int[] p : pos) {
+        for (int[] p : enemyPositions) {
             enemies.add(new Enemy(p[0], p[1]));
         }
+    }
+    
+    public void initBars() {
+    	
+    	bars = new ArrayList<>();
+    	
+    	for (Tank t : tanks) {
+    		
+    		ProgressBar p = new ProgressBar("Jugador");
+            p.setValue(t.getHealth());
+            p.setBounds(15, 15, 300, 15);
+            this.add(p);
+            this.setVisible(true);
+            
+    	}
+    }
+    
+    public void initBoxes() {
+    	
+    	boxes = new ArrayList<>();
+    	
+    	switch (lvl) {
+		case 1:
+			for (int[] p : boxesPositionLvlOne) {
+				boxes.add(new BoxLevel(p[0], p[1], p[2], p[3]));
+	        }
+			break;
+		case 2:
+			for (int[] p : boxesPositionLvlTwo) {
+				boxes.add(new BoxLevel(p[0], p[1], p[2], p[3]));
+	        }
+			break;
+			
+		case 3:
+			for (int[] p : boxesPositionLvlThree) {
+				boxes.add(new BoxLevel(p[0], p[1], p[2], p[3]));
+	        }
+			break;
+
+		default:			
+			break;
+		}
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        super.paintComponent(g);        	
         
         drawBackground(g);
         
@@ -102,60 +182,89 @@ public class Board extends JPanel implements ActionListener {
     
     private void drawBackground(Graphics g)
     {
+    	try {
+        	background = ImageIO.read(getClass().getResourceAsStream("Resources/track.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+        }
     	g.drawImage(background, 0, 0, null);
     }
 
     private void drawObjects(Graphics g) {
-
-        if (tank.isVisible()) {
-           g.drawImage(tank.getImage(), tank.getX(), tank.getY(),this);
-        }
-
-        List<Missile> ms = tank.getMissiles();
-
-        for (Missile missile : ms) {
-            if (missile.isVisible()) {
-                g.drawImage(missile.getImage(), missile.getX(),
-                        missile.getY(), this);
+    	
+    	for (Tank tank : tanks)
+    	{
+    		if (tank.isVisible()) {
+            	
+            	g.drawImage(tank.getImage(), tank.getX(), tank.getY(), this);
             }
-        }
+    		
+    		List<Missile> ms = tank.getMissiles();
+
+            for (Missile missile : ms) {
+                if (missile.isVisible()) {
+                	
+                    g.drawImage(missile.getImage(), missile.getX(), missile.getY(), this);
+                }
+            }
+            
+            List<Mine> pm = tank.getMines();
+
+            for (Mine mine : pm) {
+            	if(mine.isVisible()) {
+            		
+                    g.drawImage(mine.getImage(), mine.getX(), mine.getY(), this);
+            	}
+            }
+           /* g.setColor(Color.WHITE);
+            g.drawString("R:" + tank.getR() + "   X:" + tank.getX() + "  Y:" + tank.getY(), 10, 30);*/
+    	}        
 
         for (Enemy enemy : enemies) {
             if (enemy.isVisible()) {
+            	
                 g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
             }
             else {
+            	
             	g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
             }
         }
+        
+        for (BoxLevel boxLevel : boxes) {       	
+                g.drawRect(boxLevel.getX(), boxLevel.getY(), boxLevel.getWidth(), boxLevel.getHeight());
+        }
 
         g.setColor(Color.WHITE);
-        g.drawString("enemies left: " + enemies.size(), 5, 15);
+        g.drawString("Enemies left: " + enemies.size(), 5, 15);
+        
+        g.setColor(Color.WHITE);
+        g.drawString("R:" + tanks.get(0).getR() + "   X:" + tanks.get(0).getX() + "  Y:" + tanks.get(0).getY(), 10, 30);
     }
 
     private void drawGameOver(Graphics g) {
 
-        String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
+        String msg = "Game Over, no servis para nada";
+        Font small = new Font("Helvetica", Font.BOLD, 34);
         FontMetrics fm = getFontMetrics(small);
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(msg, (B_WIDTH - fm.stringWidth(msg)) / 2,
-                B_HEIGHT / 2);
+        g.drawString(msg, (B_WIDTH - fm.stringWidth(msg)) / 2, B_HEIGHT / 2);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
         inGame();
-
-        updateShip();
-        updateMissiles();
-        updateenemies();
-
-        checkCollisions();
-
+        for (Tank tank : tanks)
+    	{
+	        updateTanks(tank);
+	        updateMissiles(tank);
+	        updateMines(tank);
+	        checkCollisions(tank);
+    	}
+        updateEnemies();
         repaint();
     }
 
@@ -166,15 +275,15 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void updateShip() {
+    private void updateTanks(Tank tank) {
 
         if (tank.isVisible()) {
 
-            tank.move();
+            tank.update();
         }
     }
 
-    private void updateMissiles() {
+    private void updateMissiles(Tank tank) {
 
         List<Missile> ms = tank.getMissiles();
 
@@ -183,14 +292,29 @@ public class Board extends JPanel implements ActionListener {
             Missile m = ms.get(i);
 
             if (m.isVisible()) {
-                m.move();
+                m.update();
             } else {
                 ms.remove(i);
             }
         }
     }
-
-    private void updateenemies() {
+    
+    private void updateMines(Tank tank) {
+    	
+    	List <Mine> pm = tank.getMines();
+		for (int i = 0; i < pm.size(); i++) {
+			Mine mp = pm.get(i);
+	
+			if (mp.isVisible()) {
+				mp.update();
+			} 
+			else {
+				pm.remove(i);
+			}
+		}
+	}
+    
+    private void updateEnemies() {
 
         if (enemies.isEmpty()) {
 
@@ -203,22 +327,22 @@ public class Board extends JPanel implements ActionListener {
             Enemy a = enemies.get(i);
 
             if (a.isVisible()) {
-                a.move();
+                a.update();
             } else {
                 enemies.remove(i);
             }
         }
     }
 
-    public void checkCollisions() {
+    public void checkCollisions(Tank tank) {
 
-        Rectangle r3 = tank.getBounds();
+        Shape tankBound = tank.getShape();
 
         for (Enemy enemy : enemies) {
 
-            Rectangle r2 = enemy.getBounds();
+        	Shape enemyBound = enemy.getShape();
 
-            if (r3.intersects(r2)) {
+            if (Sprite.testIntersection(enemyBound,tankBound)) {
 
                 tank.setVisible(false);
                 enemy.setVisible(false);
@@ -226,37 +350,63 @@ public class Board extends JPanel implements ActionListener {
             }
         }
 
-        List<Missile> ms = tank.getMissiles();
+        List<Missile> missiles = tank.getMissiles();
 
-        for (Missile m : ms) {
+        for (Missile missile : missiles) {
 
-            Rectangle r1 = m.getBounds();
+            Shape missileBound = missile.getShape();
 
             for (Enemy enemy : enemies) {
 
-                Rectangle r2 = enemy.getBounds();
+                Shape enemyBound = enemy.getShape();
 
-                if (r1.intersects(r2)) {
+                if (Sprite.testIntersection(missileBound,enemyBound)) {
                 	
-                	m.setVisible(false);
-                    enemy.setVisible(false);
-                    
+                	missile.setVisible(false);
+                    enemy.setVisible(false);                    
                     enemy.destroyEnemy();
                 }
             }
         }
-    }
-
-    private class TAdapter extends KeyAdapter {
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            tank.keyReleased(e);
+	       
+        List<Mine> minas = tank.getMines();
+	
+	        
+        for (Mine mina : minas) {
+	
+        	Shape minaBound = mina.getShape();
+	
+	        for (Enemy enemy : enemies) {
+	
+	        	Shape enemyBound = enemy.getShape();
+	
+	        	if (Sprite.testIntersection(minaBound,enemyBound)) {
+	
+	        		mina.setVisible(false);
+	        		enemy.setVisible(false);
+	        		enemy.destroyEnemy();
+	        	}
+	        }
         }
+        
+        for (BoxLevel boxLevel : boxes) {
 
-        @Override
-        public void keyPressed(KeyEvent e) {
-            tank.keyPressed(e);
+        	Shape boxBound = boxLevel.getShape();
+
+            if (Sprite.testIntersection(boxBound,tankBound)) {
+                tank.setForward(0);
+                tank.setVisible(false);
+            }
+        }
+    }
+    
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        if (e.getID() == KeyEvent.KEY_PRESSED) {
+            Keyboard.keydown[e.getKeyCode()] = true;
+        }
+        else if (e.getID() == KeyEvent.KEY_RELEASED) {
+            Keyboard.keydown[e.getKeyCode()] = false;
         }
     }
 }

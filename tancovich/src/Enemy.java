@@ -2,52 +2,53 @@ import java.util.ArrayList;
 import java.util.List;
 import java.awt.Image;
 
-public class Enemy extends Sprite {
+public class Enemy extends Sprite implements Entity {
 
     private final int INITIAL_X = 400;
 
     public Enemy(int x, int y) {
         super(x, y);
 
-        initEnemy();
+        init();
     }
 
-    private void initEnemy() {
+    public void init() {
 
-        loadImage("src/Resources/tank_blue.png");
+        loadImage("Resources/tankBlue.png");
         getImageDimensions();
     }
     
     public void destroyEnemy() {
         
-		loadImage("src/Resources/explosion2.png");
+    	
+		loadImage("Resources/explosion2.png");
 		getImageDimensions();
     	
     	List<Image> explosion = new ArrayList<Image>();
 
-    		loadImage("src/Resources/explosion1.png");
+    		loadImage("Resources/explosion1.png");
     		explosion.add(getImage());
     		getImageDimensions();
 
-    		loadImage("src/Resources/explosion2.png");
+    		loadImage("Resources/explosion2.png");
     		explosion.add(getImage());
     		getImageDimensions();
 
-    		loadImage("src/Resources/explosion3.png");
+    		loadImage("Resources/explosion3.png");
     		explosion.add(getImage());
     		getImageDimensions();
 
-    		loadImage("src/Resources/explosion4.png");
+    		loadImage("Resources/explosion4.png");
     		explosion.add(getImage());
     		getImageDimensions();
 
-    		loadImage("src/Resources/explosion5.png");
+    		loadImage("Resources/explosion5.png");
     		explosion.add(getImage());
     		getImageDimensions();
 
     }
 
-    public void move() {
+    public void update() {
 
         if (x < 0) {
             x = INITIAL_X;

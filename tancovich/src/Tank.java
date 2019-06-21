@@ -1,112 +1,139 @@
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tank extends Sprite {
+public class Tank extends Sprite implements Entity {
 
-    private int dx;
-    private int dy;
+	private int id;
+    private int forward;
     private List<Missile> missiles;
+    private List<Mine> mines;
+    private boolean fireControl = false;
+    private boolean mineControl = false;
+    private int health = 100;
 
-    public Tank(int x, int y) {
+	private final int[][] tankControls = {
+    		    		
+            {37, 38, 39, 40, 32, 17}, 
+            {65, 87, 68, 83, 70, 71},
+            {74, 73, 76, 75, 79, 80},
+    		{100, 104, 102, 101, 106, 109}            
+            
+    };
+
+    public Tank(int id, int x, int y) {
         super(x, y);
-        initCraft();
-    }
-
-    private void initCraft() {
-
-        missiles = new ArrayList<>();
-        loadImage("src/Resources/tank_bigRedDown.png");
-        getImageDimensions();   
+        this.id = id;
+        init();
     }
     
-    public void move() {
-
-        x += dx;
-        y += dy;
-
-        if (x < 1) {
-            x = 1;
-        }
-
-        if (y < 1) {
-            y = 1;
-        }
+    public int getForward() {
+    	return forward;
     }
-
+    
+    public void setForward(int forward) {
+    	this.forward = forward;
+    }
+    
     public List<Missile> getMissiles() {
         return missiles;
     }
+    
+    public List<Mine> getMines() {
+        return mines;
+    }
+    
+    public int getHealth() {
+		return health;
+	}
 
-    public void keyPressed(KeyEvent e) {
+	public void setHealth(int health) {
+		this.health = health;
+	}
 
-        int key = e.getKeyCode();
+    public void init() {
 
-
-        if (key == KeyEvent.VK_SPACE) {
-        	fire(e);
+        if(id == 1)
+        {
+        	loadImage("Resources/tankRed.png");
+        }
+        else if(id == 2)
+        {
+        	loadImage("Resources/tankBlue.png");
         }
         
-        if (key == KeyEvent.VK_LEFT) {
-            dx = -1;
-            
-            loadImage("src/Resources/tank_bigRedLeft.png");
-            getImageDimensions();
-        }
-
-        if (key == KeyEvent.VK_RIGHT) {
-            dx = 1;
-            
-            loadImage("src/Resources/tank_bigRedRight.png");
-            getImageDimensions();
-        }
-
-        if (key == KeyEvent.VK_UP) {
-            dy = -1;
-            
-            loadImage("src/Resources/tank_bigRedUp.png");
-            getImageDimensions();
-        }
-
-        if (key == KeyEvent.VK_DOWN) {
-            dy = 1;
-            
-            loadImage("src/Resources/tank_bigRedDown.png");
-            getImageDimensions();
-        }
+        missiles = new ArrayList<>();
+        mines = new ArrayList<>();
+    }
+    
+    public void update() {
+    	
+    	checkControls();
+    	
+    	x = x + (int)(Math.sin(Math.toRadians(-r)) * forward);
+        y = y + (int)(Math.cos(Math.toRadians(-r)) * forward);
         
-        if(key == (KeyEvent.VK_DOWN + KeyEvent.VK_RIGHT)) {
-            
-        	dy = -1;
-            
-            loadImage("src/Resources/tank_blue.png");
-            getImageDimensions();
+        if(id == 1)
+        {
+        	loadImage("Resources/tankRed.png", r);
+        }
+        else if(id == 2)
+        {
+        	loadImage("Resources/tankBlue.png", r);
         }
     }
-
-    public void fire(KeyEvent e)
+    
+    public void checkControls()
+    {
+    	if (Keyboard.keydown[tankControls[id-1][0]]) //Izquierda
+    	{
+    		if(forward >= 0) r -= 5;
+    		else r += 5;
+    		
+    	}
+    	if (Keyboard.keydown[tankControls[id-1][2]]) //Derecha
+    	{
+    		if(forward >= 0) r += 5;
+    		else r -= 5;
+    	}
+    	if(!Keyboard.keydown[tankControls[id-1][3]] && !Keyboard.keydown[tankControls[id-1][1]])
+    	{
+    		forward = 0;
+    	}
+    	else
+    	{
+        	if (Keyboard.keydown[tankControls[id-1][1]]) //Velocidad
+        	{
+        		forward = 5;
+        	}
+        	if (Keyboard.keydown[tankControls[id-1][3]]) //Freno
+        	{
+        		forward = -5;
+        	}
+    	}    	
+    	if (Keyboard.keydown[tankControls[id-1][4]] && !fireControl) {
+        	fire();
+        	fireControl = true;
+        }
+    	if(!Keyboard.keydown[tankControls[id-1][4]]) // Tiro
+    	{
+    		fireControl = false;
+    	}        
+        if (Keyboard.keydown[tankControls[id-1][5]] && !mineControl) {
+        	plant();
+        	mineControl = true;
+        }
+        if(!Keyboard.keydown[tankControls[id-1][5]]) // Mina
+        {
+        	mineControl = false;
+        }
+    }
+    
+    public void fire()
     {       
-    	missiles.add(new Missile(x + width, y + height / 2));
+    	missiles.add(new Missile(x + width / 2, y + height / 2, r));
     }
-
-    public void keyReleased(KeyEvent e) {
-
-        int key = e.getKeyCode();
-
-        if (key == KeyEvent.VK_LEFT) {
-            dx = 0;
-        }
-
-        if (key == KeyEvent.VK_RIGHT) {
-            dx = 0;
-        }
-
-        if (key == KeyEvent.VK_UP) {
-            dy = 0;
-        }
-
-        if (key == KeyEvent.VK_DOWN) {
-            dy = 0;
-        }
+    
+    public void plant() {
+    	mines.add(new Mine(x + width / 2, y + height /2));
     }
 }
