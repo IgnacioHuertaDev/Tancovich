@@ -26,10 +26,10 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	public void mousePressed(MouseEvent e) {
-		board.mousePressed(e);	
+		board.mousePressed(e);
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		
+
 	}
 }
