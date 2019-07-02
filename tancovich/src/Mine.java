@@ -1,8 +1,10 @@
+
 public class Mine extends Sprite implements Entity {
     
 	private int shooterId;
     private int damage;
     private boolean explode = false;
+    private int timer = 0;
     
 	public Mine(int x, int y, int shooter) {
 		super(x, y);		
@@ -18,12 +20,14 @@ public class Mine extends Sprite implements Entity {
     }
 
     public void update() {
-        
+          
+		if (isAbove()) loadImage("Resources/minaOn.png");
+
 		if(isExplode()) {
 			if(isAlive()) setAlive(false);
 			setDamage();
 			explodeSprite(30); 
-		}
+		}		
 
     }
 
@@ -56,5 +60,17 @@ public class Mine extends Sprite implements Entity {
 
 	public void setExplode(boolean explode) {
 		this.explode = explode;
-	}   
+	}
+
+	public int getTimer() {
+		return timer;
+	}
+
+	public void setTimer(int timer) {
+		this.timer = timer;
+	}
+	public boolean isAbove() {
+		return getTimer() > 100;
+	}
+
 }
