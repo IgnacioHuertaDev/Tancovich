@@ -59,6 +59,7 @@ public class Board extends JPanel  implements ActionListener{
             {2, 720, 480}
     };
     
+    
     public static enum STATE {
     	STARTMENU,
     	MAINMENU,
@@ -138,6 +139,13 @@ public class Board extends JPanel  implements ActionListener{
         	tanks.add(new Tank(p[0], p[1], p[2]));
         }
     }
+//    public void initHearts() {
+//    	hearts = new ArrayList<>();
+//    	
+//        for (int[] p : heartsPositions) {
+//        	hearts.add(new Hearts(p[0], p[1]));
+//        }
+//    }
 
    /* public void initEnemies() {
 
@@ -279,11 +287,20 @@ public class Board extends JPanel  implements ActionListener{
                     g.drawString( tank.getMinesNumber() + " mines left.", tank.getX()-12, tank.getY()-5);
             	}
             }
-    		
+    		            
     		if (tank.isVisible()) {
             	
             	g.drawImage(tank.getImage(), tank.getX(), tank.getY(), this);
             }
+    		
+    		List<Hearts> ht = tank.getHeart();
+    		
+    		for (Hearts hearts : ht) {
+                if (hearts.isVisible()) {
+                	
+                    g.drawImage(hearts.getImage(), hearts.getX(), hearts.getY(), this);
+                }
+    		}
     		
     		List<Missile> ms = tank.getMissiles();
 
@@ -295,9 +312,9 @@ public class Board extends JPanel  implements ActionListener{
                     g.drawString( tank.getMissileNumber() + " missiles left.", tank.getX()-12, tank.getY()-5);
                     if(!tank.CanFire()) g.drawString("No missiles left.", tank.getX()-12, tank.getY()-5);
                 }
-            }
-                       
-    	}        
+            }   
+            
+    	}       
 
         /*for (Enemy enemy : enemies) {
             if (enemy.isVisible()) {
@@ -315,9 +332,11 @@ public class Board extends JPanel  implements ActionListener{
         }
 
         g.setColor(Color.WHITE);
-        g.drawString("R:" + tanks.get(0).getR() + "   X:" + tanks.get(0).getX() + "  Y:" + tanks.get(0).getY(), 10, 30);
-        //g.drawString("Enemies left: " + enemies.size(), 5, 15);  
+        //g.drawString("R:" + tanks.get(0).getR() + "   X:" + tanks.get(0).getX() + "  Y:" + tanks.get(0).getY(), 10, 30);
+        //g.drawString("Enemies left: " + enemies.size(), 5, 15); 
         Font small = new Font("Helvetica", Font.BOLD, 15);
+        g.drawString(""+tanks.get(0).getLifes(), 85, 33);
+        g.drawString(""+tanks.get(1).getLifes(), 425, 33);
         g.setFont(small);
         g.drawString("Player 1:", 180, 16);
 		g.drawString("Player 2:", 550, 16);
@@ -344,6 +363,7 @@ public class Board extends JPanel  implements ActionListener{
 	    	{
 	        	updateTanks(tank);
 		        updateMissiles(tank);
+		        updateHearts(tank);
 		        updateMines(tank);
 		        checkCollisions(tank);
 	    	}
@@ -374,6 +394,22 @@ public class Board extends JPanel  implements ActionListener{
                 ms.remove(i);
             }
         }        
+    }
+    
+    private void updateHearts (Tank tank) {
+        
+    	List<Hearts> ht = tank.getHeart();
+        for (int i = 0; i < ht.size(); i++) {
+
+        	Hearts h = ht.get(i);
+
+            if (h.isVisible()) {
+            	h.setNumberLifes(tank.getLifes());
+            	h.update();
+            } else {
+                ht.remove(i);
+            }
+        } 
     }
     
     private void updateMines(Tank tank) {
@@ -655,4 +691,5 @@ public class Board extends JPanel  implements ActionListener{
     		Keyboard.keydown[e.getKeyCode()] = false;
     	}
     }
+
 }
