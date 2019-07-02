@@ -244,10 +244,11 @@ public class Board extends JPanel  implements ActionListener{
 			}
 		}
 		if (State == STATE.HELP) {
-			menu.render(g,7);
+			menu.render(g,render);
 			if(Keyboard.keydown[27] && !escapeControl)
 			{
 				escapeControl = true;
+				render = 1;
 				State = STATE.MAINMENU;	
 			}
 		}
@@ -256,6 +257,7 @@ public class Board extends JPanel  implements ActionListener{
 			if(Keyboard.keydown[27] && !escapeControl)
 			{
 				escapeControl = true;
+				render = 1;
 				State = STATE.MAINMENU;
 			}
 		}
@@ -649,6 +651,16 @@ public class Board extends JPanel  implements ActionListener{
 				render = 1;
 			}
 		}
+    	else if(State == STATE.HELP) 
+    	{
+    		if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
+				render = 16;
+			}			
+			else
+			{
+				render = 7;
+			}
+    	}
     	else if(State == STATE.CREDITS) 
     	{
     		if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
@@ -714,6 +726,7 @@ public class Board extends JPanel  implements ActionListener{
 			}
 			
 			if(isBetween(mx,Buttons[1][0],Buttons[1][1]) && isBetween(my,Buttons[1][2],Buttons[1][3])) {
+				render = 7;
 				State = STATE.HELP;
 			}
 			
