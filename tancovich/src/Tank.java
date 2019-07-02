@@ -9,6 +9,7 @@ public class Tank extends Sprite implements Entity{
     private int impacts = 0;
     private List<Missile> missiles;
     private List<Mine> mines;
+    private List<Hearts> heart;
     private boolean canForward = true;
     private boolean canBack = true;
     private boolean fireControl = false;
@@ -16,6 +17,7 @@ public class Tank extends Sprite implements Entity{
     private int missileNumber = 10;
     private int minesNumber = 4;
     private int timer = 0;
+    private int lifes = 3;
 
     
 	private final int[][] tankControls = {
@@ -98,6 +100,9 @@ public class Tank extends Sprite implements Entity{
         
         missiles = new ArrayList<>();
         mines = new ArrayList<>();
+        heart = new ArrayList<>();
+        
+        drawHearts();
 
     }
     
@@ -126,8 +131,26 @@ public class Tank extends Sprite implements Entity{
         		if(this.isAlive()) this.setAlive(false);
         		explodeSprite(30);
         		setVisible(false);
+        		setLifes(getLifes()-1);
         	}
-        }        
+        } 
+        
+        if (getLifes() > 0 && !isVisible()) {
+        	init();
+        	setVisible(true);
+        	setHealth(100);
+        	if (getId()== 1) {
+            	setX(40);
+            	setY(60);
+            	setR(0);	
+        	}
+        	else if (getId() == 2) {
+            	
+        		setX(720);
+            	setY(480);
+            	setR(0);	
+        	}
+        }
     }
     
     public void checkControls()
@@ -187,6 +210,10 @@ public class Tank extends Sprite implements Entity{
     	mines.add(new Mine(x + width / 2, y + height /2, getId()));
     }
     
+    public void drawHearts() {
+    	if(getId() == 1) heart.add(new Hearts (80, 19, getId()));
+    	if (getId() == 2) heart.add(new Hearts (420, 19, getId()));
+    }
     public ArrayList<Integer> calculateNextPosition(boolean forward)
     {
     	ArrayList<Integer> nextPos = new ArrayList<Integer>();
@@ -248,4 +275,17 @@ public class Tank extends Sprite implements Entity{
 	public void setFireControl(boolean fireControl) {
 		this.fireControl = fireControl;
 	}
+
+	public int getLifes() {
+		return lifes;
+	}
+
+	public void setLifes(int lifes) {
+		this.lifes = lifes;
+	}
+
+	public List<Hearts> getHeart() {
+		return heart;
+	}
+
 }

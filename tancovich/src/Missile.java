@@ -95,6 +95,5 @@ public class Missile extends Sprite implements Entity{
 	{
 	   int range = (max - min) + 1;     
 	   return (int)(Math.random() * range) + min;
-	}    
-
+	}   
 }
