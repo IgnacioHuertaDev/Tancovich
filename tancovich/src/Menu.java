@@ -28,7 +28,7 @@ public class Menu {
     	"Resources/Menu/GameOver/BACKTOMENU.png",
     	"Resources/Menu/Credits/CREDITS.jpg", //14
     	"Resources/Menu/Credits/CREDITSBACK.jpg",
-    	"Resources/Menu/Credits/HOWTOPLAYBACK.jpg"
+    	"Resources/Menu/HowToPlay/HOWTOPLAYBACK.jpg"
     };
 
     public JLabel getLabel() { 
