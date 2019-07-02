@@ -1,3 +1,23 @@
+<<<<<<< HEAD
+/Board$STATE.class
+/Board.class
+/Box.class
+/Enemy.class
+/Entity.class
+/Game$1.class
+/Game.class
+/Keyboard.class
+/Menu.class
+/Mine.class
+/Missile.class
+/MouseInput.class
+/ProgressBar.class
+/Resources/
+/Sprite.class
+/Tank.class
+/Board$State.class
+/Board$BUTTON.class
+=======
 /Resources/
 /Box.class
 /Entity.class
@@ -5,3 +25,4 @@
 /Keyboard.class
 /Mine.class
 /ProgressBar.class
+>>>>>>> 7220e4693d2d24a2d8ee8fa8f2579f29ecc5e9fe

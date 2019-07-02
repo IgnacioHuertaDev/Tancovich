@@ -13,32 +13,43 @@ public class Game extends JFrame {
 	public Game() {
 
         initUI();
+       
     }
 
     private void initUI() {
 
     	try {
-	    		Image background = ImageIO.read(getClass().getResourceAsStream("Resources/tankRed.png"));
-	    		setIconImage(background);
-    		} catch (IOException ex) {
-    			Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-			}
+	    	Image background = ImageIO.read(getClass().getResourceAsStream("Resources/logoIcon.png"));
+	    	setIconImage(background);
+    	} 
+    	catch (IOException ex) {
+    		Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+		}
     	
         add(new Board());
-
         setResizable(false);
         pack();
 
         setTitle("Tancovich");
         setLocationRelativeTo(null);
+        
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-
+    
     public static void main(String[] args) {
 
-        EventQueue.invokeLater(() -> {
-            Game ex = new Game();
-            ex.setVisible(true);
+        EventQueue.invokeLater(new Runnable()  {
+    
+			public void run() {
+	   			try {
+	   				Game ex = new Game();
+	   				ex.setVisible(true);
+	   			}
+	   			catch (Exception e) {
+	   				e.printStackTrace();
+	   			}
+			}
+    		
         });
     }
 }
