@@ -1,8 +1,11 @@
+import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tank extends Sprite implements Entity{
 
+	private final int TANK_ROTATION = 5;
+	private final int TANK_SPEED = 5;
 	private int id;
     private int forward;
     private int health = 100;
@@ -18,7 +21,7 @@ public class Tank extends Sprite implements Entity{
     private int minesNumber = 4;
     private int timer = 0;
     private int lifes = 3;
-
+    private Box collisionedBox = null;
     
 	private final int[][] tankControls = {
     		    		
@@ -86,6 +89,73 @@ public class Tank extends Sprite implements Entity{
     public List<Mine> getMines() {
         return mines;
     }
+    
+    public boolean CanFire() {
+		return getMissileNumber() > 0;
+	}
+
+	public boolean canPlant() {
+		return getMinesNumber() > 0;
+	}
+
+	public int getMinesNumber() {
+		return minesNumber;
+	}
+
+	public void setMinesNumber(int minesNumber) {
+		this.minesNumber = minesNumber;
+	}
+    public boolean isMineControl() {
+		return mineControl;
+	}
+
+	public void setMineControl(boolean mineControl) {
+		this.mineControl = mineControl;
+	}
+
+	public int getMissileNumber() {
+		return missileNumber;
+	}
+
+	public void setMissileNumber(int missileNumber) {
+		this.missileNumber = missileNumber;
+	}
+	
+	public int getTimer() {
+		return timer;
+	}
+
+	public void setTimer(int timer) {
+		this.timer = timer;
+	}
+
+	public boolean isFireControl() {
+		return fireControl;
+	}
+
+	public void setFireControl(boolean fireControl) {
+		this.fireControl = fireControl;
+	}
+
+	public int getLifes() {
+		return lifes;
+	}
+
+	public void setLifes(int lifes) {
+		this.lifes = lifes;
+	}
+
+	public List<Hearts> getHeart() {
+		return heart;
+	}
+
+	public Box getCollisionedBox() {
+		return collisionedBox;
+	}
+
+	public void setCollisionedBox(Box collisionedBox) {
+		this.collisionedBox = collisionedBox;
+	}
 
     public void init() {
 
@@ -157,13 +227,13 @@ public class Tank extends Sprite implements Entity{
     {
     	if (Keyboard.keydown[tankControls[id-1][0]]) //Izquierda
     	{
-    		if(forward >= 0) setR(getR()-5);
+    		if(forward >= 0) setR(getR()-TANK_ROTATION);
     		else setR(getR()+5);
     		
     	}
     	if (Keyboard.keydown[tankControls[id-1][2]]) //Derecha
     	{
-    		if(forward >= 0) setR(getR()+5);
+    		if(forward >= 0) setR(getR()+TANK_ROTATION);
     		else setR(getR()-5);
     	}
     	if(!Keyboard.keydown[tankControls[id-1][3]] && !Keyboard.keydown[tankControls[id-1][1]])
@@ -174,11 +244,11 @@ public class Tank extends Sprite implements Entity{
     	{
         	if (isCanForward() && Keyboard.keydown[tankControls[id-1][1]]) //Marcha adelante
         	{
-        		setForward(5);
+        		setForward(TANK_SPEED);
         	}
         	if (isCanBack() && Keyboard.keydown[tankControls[id-1][3]]) //Marcha atras
         	{
-        		setForward(-5);
+        		setForward(-TANK_SPEED);
         	}
     	}    	
     	if (Keyboard.keydown[tankControls[id-1][4]] && !fireControl && CanFire()) {
@@ -210,10 +280,18 @@ public class Tank extends Sprite implements Entity{
     	mines.add(new Mine(x + width / 2, y + height /2, getId()));
     }
     
+	public void reloadMissiles () {
+        if(getTimer() > 50 && !CanFire()) {
+        	setMissileNumber(10);
+        	setTimer(0);
+        }
+	}
+    
     public void drawHearts() {
     	if(getId() == 1) heart.add(new Hearts (80, 19, getId()));
     	if (getId() == 2) heart.add(new Hearts (420, 19, getId()));
     }
+    
     public ArrayList<Integer> calculateNextPosition(boolean forward)
     {
     	ArrayList<Integer> nextPos = new ArrayList<Integer>();
@@ -221,71 +299,53 @@ public class Tank extends Sprite implements Entity{
     	nextPos.add(getY() + (int)(Math.cos(Math.toRadians(-getR())) * (forward ? 5 : -5)));
     	return nextPos;
     }
-
-	public boolean CanFire() {
-		return getMissileNumber() > 0;
-	}
-
-	public boolean canPlant() {
-		return getMinesNumber() > 0;
-	}
-
-	public int getMinesNumber() {
-		return minesNumber;
-	}
-
-	public void setMinesNumber(int minesNumber) {
-		this.minesNumber = minesNumber;
-	}
-    public boolean isMineControl() {
-		return mineControl;
-	}
-
-	public void setMineControl(boolean mineControl) {
-		this.mineControl = mineControl;
-	}
-
-	public int getMissileNumber() {
-		return missileNumber;
-	}
-
-	public void setMissileNumber(int missileNumber) {
-		this.missileNumber = missileNumber;
-	}
-	
-	public int getTimer() {
-		return timer;
-	}
-
-	public void setTimer(int timer) {
-		this.timer = timer;
-	}
-	
-	public void reloadMissiles () {
-        if(getTimer() > 50 && !CanFire()) {
-        	setMissileNumber(10);
-        	setTimer(0);
-        }
-	}
-
-	public boolean isFireControl() {
-		return fireControl;
-	}
-
-	public void setFireControl(boolean fireControl) {
-		this.fireControl = fireControl;
-	}
-
-	public int getLifes() {
-		return lifes;
-	}
-
-	public void setLifes(int lifes) {
-		this.lifes = lifes;
-	}
-
-	public List<Hearts> getHeart() {
-		return heart;
-	}
-
+    
+    public void banMovement(Box box)
+    {
+    	Shape boxBound = box.getShape();
+    	ArrayList<Integer> nextPos = new ArrayList<Integer>();
+    	if(getForward() > 0)
+		{
+			nextPos = calculateNextPosition(true);
+			if(Sprite.testIntersection(boxBound,nextPos.get(0),nextPos.get(1),getWidth()-4,getHeight()-4))
+			{
+				setCanForward(false);
+    			setForward(0);
+    			setCollisionedBox(box);
+			}	    			
+		}
+		if(getForward() < 0)
+		{
+			nextPos = calculateNextPosition(false);
+			if(Sprite.testIntersection(boxBound,nextPos.get(0),nextPos.get(1),getWidth()-4,getHeight()-4))
+			{
+				setCanBack(false);
+				setForward(0);
+				setCollisionedBox(box);
+			}
+		}
+    }
+    
+    public void restoreMovement(Box box)
+    {
+    	ArrayList<Integer> nextPos = new ArrayList<Integer>();
+    	if(!isCanForward())
+    	{    		
+    		nextPos = calculateNextPosition(true);
+    		if(!Sprite.testIntersection(box.getShape(),nextPos.get(0),nextPos.get(1),getWidth()-4,getHeight()-4))
+    		{
+        		setCanForward(true);
+        		setCollisionedBox(null);
+    		}
+    	}
+    	if(!isCanBack())
+    	{
+    		nextPos = calculateNextPosition(false);
+    		if(!Sprite.testIntersection(box.getShape(),nextPos.get(0),nextPos.get(1),getWidth()-4,getHeight()-4))
+    		{
+    			setCanBack(true);
+    			setCollisionedBox(null);
+    		}
+    	}
+    }
 }
