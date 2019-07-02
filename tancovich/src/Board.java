@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.Toolkit;
@@ -35,7 +34,7 @@ public class Board extends JPanel  implements ActionListener{
     private List<ProgressBar> bars;
     private Timer timer;
     private Menu menu;
-    private boolean enterControl = false;
+    private boolean enterControl = false;    
     private boolean escapeControl = false;
     
     private final int[][] boxesPositionLvlOne = {
@@ -66,6 +65,7 @@ public class Board extends JPanel  implements ActionListener{
     	HELP,
     	CREDITS,
     	GAME,
+    	PAUSE,
     	GAMEOVER
     };
     
@@ -76,11 +76,14 @@ public class Board extends JPanel  implements ActionListener{
     	{327,460,380,420}, //CREDITS
     	{20,100,535,580}, //BACK
     	{720,780,535,580}, //EXIT
-    	{265,500,425,475} //PRESS ENTER
+    	{265,500,425,475}, //PRESS ENTER
+    	{270,530,240,272}, //RESUME
+    	{265,530,320,350} //BACK TO MENU
+    	
     };
     
     public static STATE State = STATE.STARTMENU;
-    private int render = 1;
+    private int render;
     
     /*private final int[][] enemyPositions = {
     		
@@ -160,8 +163,7 @@ public class Board extends JPanel  implements ActionListener{
     	
     	bars = new ArrayList<>();
     	
-    	for (Tank t : tanks) {
-    		
+    	for (Tank t : tanks) {    		
     		ProgressBar p = new ProgressBar(t.getId());
             p.setValue(t.getHealth());      
             p.setBounds(((t.getId()-1)*340)+100, 20, 300, 20);
@@ -169,6 +171,17 @@ public class Board extends JPanel  implements ActionListener{
             bars.add(p);
             this.add(p);
     	}
+    }
+    
+    public void hideBars() {
+    	
+    	if(bars != null)
+    	{
+    		for (ProgressBar bar : bars) {
+        		
+        		bar.setVisible(false);
+        	}
+    	}    	
     }
     
     public void initBoxes() {
@@ -201,6 +214,7 @@ public class Board extends JPanel  implements ActionListener{
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		if(State != STATE.GAME && State != STATE.PAUSE && State != STATE.GAMEOVER) hideBars();
 
 		if (State == STATE.STARTMENU) {
 			menu.render(g,0);
@@ -230,11 +244,19 @@ public class Board extends JPanel  implements ActionListener{
 			}
 		}
 		if (State == STATE.HELP) {
-			menu.render(g,2);
+			menu.render(g,7);
 			if(Keyboard.keydown[27] && !escapeControl)
 			{
 				escapeControl = true;
 				State = STATE.MAINMENU;	
+			}
+		}
+		if (State == STATE.CREDITS) {
+			menu.render(g,render);
+			if(Keyboard.keydown[27] && !escapeControl)
+			{
+				escapeControl = true;
+				State = STATE.MAINMENU;
 			}
 		}
 		if(State == STATE.GAME) {
@@ -244,12 +266,31 @@ public class Board extends JPanel  implements ActionListener{
 			if(Keyboard.keydown[27] && !escapeControl)
 			{
 				escapeControl = true;
-				render = 1;
-				State = STATE.MAINMENU;				
+				render = 8;
+				State = STATE.PAUSE;				
+			}
+		}
+		if(State == STATE.PAUSE) {
+			drawBackground(g);
+			drawObjects(g);
+			Toolkit.getDefaultToolkit().sync();
+			menu.render(g,render);
+			if(Keyboard.keydown[27] && !escapeControl)
+			{
+				escapeControl = true;
+				State = STATE.GAME;				
 			}
 		}
 		if(State == STATE.GAMEOVER) {
-			drawGameOver(g);
+			drawBackground(g);
+			drawObjects(g);
+			Toolkit.getDefaultToolkit().sync();
+			menu.render(g,render);
+			if(Keyboard.keydown[27] && !escapeControl)
+			{
+				escapeControl = true;
+				State = STATE.MAINMENU;				
+			}
 		}
 		
 		if(!Keyboard.keydown[10])
@@ -343,32 +384,27 @@ public class Board extends JPanel  implements ActionListener{
         
     }
 
-    private void drawGameOver(Graphics g) {
-
-        String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 34);
-        FontMetrics fm = getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(msg, (B_WIDTH - fm.stringWidth(msg)) / 2, B_HEIGHT / 2);
-        
-    }
-
     @Override  
     public void actionPerformed(ActionEvent e) {
     	
     	if (State == STATE.GAME) {
+    		int tankCounter = 0;
     		for (Tank tank: tanks)
 	    	{
+    			if(tank.isVisible()) tankCounter++;
 	        	updateTanks(tank);
 		        updateMissiles(tank);
 		        updateHearts(tank);
 		        updateMines(tank);
 		        checkCollisions(tank);
 	    	}
+    		if(tankCounter < 2)
+    		{
+    			render = 11;
+    			State = STATE.GAMEOVER;
+    		}    			
+    		//updateEnemies();
 		}
-		//updateEnemies();
     	repaint();
     }
     
@@ -447,6 +483,11 @@ public class Board extends JPanel  implements ActionListener{
 //        }
 //    }*/
 //
+    public void checkTanks()
+    {
+    	
+    }
+    
     public void checkCollisions(Tank tank) {
 
     	if(tank.getCollisionedBox() != null) tank.restoreMovement(tank.getCollisionedBox());
@@ -585,29 +626,69 @@ public class Board extends JPanel  implements ActionListener{
     	if (State == STATE.MAINMENU) {
 			
 			if(isBetween(mx,Buttons[0][0],Buttons[0][1]) && isBetween(my,Buttons[0][2],Buttons[0][3])) {
-				render = 3;
+				render = 2;
 			}
 			
 			else if(isBetween(mx,Buttons[1][0],Buttons[1][1]) && isBetween(my,Buttons[1][2],Buttons[1][3])) {
-				render = 4;
+				render = 3;
 			}
 			
 			else if(isBetween(mx,Buttons[2][0],Buttons[2][1]) && isBetween(my,Buttons[2][2],Buttons[2][3])) {
-				render = 5;
+				render = 4;
 			}
 			
 			else if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 6;
+				render = 5;
 			}
 			
 			else if(isBetween(mx,Buttons[4][0],Buttons[4][1]) && isBetween(my,Buttons[4][2],Buttons[4][3])) {
-				render = 7;	
+				render = 6;	
 			}
 			
 			else {
 				render = 1;
 			}
 		}
+    	else if(State == STATE.CREDITS) 
+    	{
+    		if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
+				render = 15;
+			}			
+			else
+			{
+				render = 14;
+			}
+    	}
+    	else if(State == STATE.PAUSE)
+    	{
+    		if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
+				render = 9;
+			}
+			
+			else if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
+				render = 10;
+			}
+			
+			else
+			{
+				render = 8;
+			}
+    	}
+    	else if(State == STATE.GAMEOVER)
+    	{
+    		if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
+				render = 12;
+			}
+			
+			else if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
+				render = 13;
+			}
+			
+			else
+			{
+				render = 11;
+			}
+    	}
     }
 	
 	public void mousePressed(MouseEvent e) { //Mouse Action
@@ -615,10 +696,12 @@ public class Board extends JPanel  implements ActionListener{
 		//Coordenadas X Y del mouse
 		int mx  = e.getX();
 		int my  = e.getY();
+		System.out.println("X: " + mx + " Y: " + my);
 
 		if (State == STATE.STARTMENU) {
 			
 			if(isBetween(mx,Buttons[5][0],Buttons[5][1]) && isBetween(my,Buttons[5][2],Buttons[5][3])) {
+				render = 1;
 				State = STATE.MAINMENU;
 			}
 		}
@@ -635,10 +718,12 @@ public class Board extends JPanel  implements ActionListener{
 			}
 			
 			if(isBetween(mx,Buttons[2][0],Buttons[2][1]) && isBetween(my,Buttons[2][2],Buttons[2][3])) {
+				render = 14;
 				State = STATE.CREDITS;
 			}
 			
 			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
+				render = 0;
 				State = STATE.STARTMENU;
 			}
 			
@@ -650,14 +735,27 @@ public class Board extends JPanel  implements ActionListener{
 		if(State == STATE.HELP) {
 			
 			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				State = STATE.STARTMENU;
+				render = 1;
+				State = STATE.MAINMENU;
 			}
 		}
 		
 		if(State == STATE.CREDITS) {
 			
 			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				State = STATE.STARTMENU;
+				render = 1;
+				State = STATE.MAINMENU;
+			}
+		}
+		
+		if(State == STATE.PAUSE || State == STATE.GAMEOVER) {
+			
+			if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
+				State = STATE.GAME;
+			}
+			
+			if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
+				State = STATE.MAINMENU;
 			}
 		}
 	}
@@ -672,5 +770,4 @@ public class Board extends JPanel  implements ActionListener{
     		Keyboard.keydown[e.getKeyCode()] = false;
     	}
     }
-
 }
