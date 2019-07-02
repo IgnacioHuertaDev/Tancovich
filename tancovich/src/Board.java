@@ -449,6 +449,8 @@ public class Board extends JPanel  implements ActionListener{
 //
     public void checkCollisions(Tank tank) {
 
+    	if(tank.getCollisionedBox() != null) tank.restoreMovement(tank.getCollisionedBox());
+    	
     	Shape tankBound = tank.getShape();
 
         /*for (Enemy enemy : enemies) {
@@ -541,28 +543,7 @@ public class Board extends JPanel  implements ActionListener{
         	
         	if (Sprite.testIntersection(boxBound,tankBound))
         	{
-        		ArrayList<Integer> nextPos = new ArrayList<Integer>();
-	    		if(tank.getForward() >= 0)
-	    		{
-	    			
-	    			nextPos = tank.calculateNextPosition(true);
-	    			if (Sprite.testIntersection(boxBound,nextPos.get(0),nextPos.get(1),tank.getWidth()-4,tank.getHeight()-4))
-	    			{
-	    				tank.setCanForward(false);
-	    				tank.setForward(0);
-	    			}
-		            else if(!tank.isCanForward()) tank.setCanForward(true);
-	    		}
-	    		else
-	    		{
-	    			nextPos = tank.calculateNextPosition(false);
-	    			if (Sprite.testIntersection(boxBound,nextPos.get(0),nextPos.get(1),tank.getWidth()-4,tank.getHeight()-4))
-	    			{
-	    				tank.setCanBack(false);
-	    				tank.setForward(0);
-		    		}
-		            else if(!tank.isCanBack()) tank.setCanBack(true);
-	    		}
+        		tank.banMovement(box);
         	}
 	 
             for (Missile missile : missiles) {
