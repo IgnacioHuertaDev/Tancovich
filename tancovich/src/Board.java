@@ -37,7 +37,6 @@ public class Board extends JPanel  implements ActionListener{
     private Menu menu;
     private boolean enterControl = false;
     private boolean escapeControl = false;
-    private int delayWeapon = 1;
     
     private final int[][] boxesPositionLvlOne = {
     		{293, 136, 55, 338},
@@ -343,7 +342,6 @@ public class Board extends JPanel  implements ActionListener{
     	if (State == STATE.GAME) {
     		for (Tank tank: tanks)
 	    	{
-				setDelayWeapon(getdelayWeapon()+1);
 	        	updateTanks(tank);
 		        updateMissiles(tank);
 		        updateMines(tank);
@@ -359,7 +357,7 @@ public class Board extends JPanel  implements ActionListener{
         if (tank.isVisible()) {
 
             tank.update();
-            tank.reloadMissiles(getdelayWeapon());
+            if(tank.getMissileNumber() <= 1) tank.setTimer(tank.getTimer()+1);
         }
     }
 
@@ -383,9 +381,9 @@ public class Board extends JPanel  implements ActionListener{
     	List <Mine> pm = tank.getMines();
 		for (int i = 0; i < pm.size(); i++) {
 			Mine mp = pm.get(i);
-	
 			if (mp.isVisible()) {
 				mp.update();
+		    	mp.setTimer(mp.getTimer()+1);
 			} 
 			else {
 				pm.remove(i);
@@ -478,7 +476,7 @@ public class Board extends JPanel  implements ActionListener{
         		Shape tankeBound = tankObjective.getShape();
 	        	
                 if (Sprite.testIntersection(mineBound,tankeBound)) {
-                	if(mine.getShooterId() != tankObjective.getId() || mine.getShooterId() == tank.getId()  && getdelayWeapon() % 50 == 0) {
+                	if(mine.getShooterId() != tankObjective.getId() || mine.getShooterId() == tank.getId() && mine.isAbove()) {
                 		if(tankObjective.visible) {
                 		tankObjective.setHealth(tankObjective.getHealth() - mine.getDamage());   
                 		for (int i = 0; i < bars.size(); i++) {
@@ -645,14 +643,6 @@ public class Board extends JPanel  implements ActionListener{
 				State = STATE.STARTMENU;
 			}
 		}
-	}
-
-	public int getdelayWeapon() {
-		return delayWeapon;
-	}
-
-	public void setDelayWeapon(int delayWeapon) {
-		this.delayWeapon = delayWeapon;
 	}
 
     @Override

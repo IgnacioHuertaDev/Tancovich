@@ -15,6 +15,7 @@ public class Tank extends Sprite implements Entity{
 	private boolean mineControl = false;    
     private int missileNumber = 10;
     private int minesNumber = 4;
+    private int timer = 0;
 
     
 	private final int[][] tankControls = {
@@ -107,7 +108,7 @@ public class Tank extends Sprite implements Entity{
         	if(this.getHealth() > 0)
         	{
         		checkControls();
-            	
+            	reloadMissiles();
             	x = x + (int)(Math.sin(Math.toRadians(-r)) * getForward());
                 y = y + (int)(Math.cos(Math.toRadians(-r)) * getForward());
         		
@@ -225,8 +226,19 @@ public class Tank extends Sprite implements Entity{
 		this.missileNumber = missileNumber;
 	}
 	
-	public void reloadMissiles (int delay) {
-        if(delay % 50 == 0 && !CanFire()) setMissileNumber(10); 
+	public int getTimer() {
+		return timer;
+	}
+
+	public void setTimer(int timer) {
+		this.timer = timer;
+	}
+	
+	public void reloadMissiles () {
+        if(getTimer() > 50 && !CanFire()) {
+        	setMissileNumber(10);
+        	setTimer(0);
+        }
 	}
 
 	public boolean isFireControl() {
