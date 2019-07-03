@@ -28,7 +28,12 @@ public class Menu {
     	"Resources/Menu/GameOver/BACKTOMENU.png",
     	"Resources/Menu/Credits/CREDITS.jpg", //14
     	"Resources/Menu/Credits/CREDITSBACK.jpg",
-    	"Resources/Menu/HowToPlay/HOWTOPLAYBACK.jpg"
+    	"Resources/Menu/HowToPlay/HOWTOPLAYBACK.jpg",
+    	"Resources/Menu/ChooseMap/CHOOSEMAP(PASIVO).jpg", //17    	
+    	"Resources/Menu/ChooseMap/CHOOSEMAP(LVL1).jpg",
+    	"Resources/Menu/ChooseMap/CHOOSEMAP(LVL2).jpg",
+    	"Resources/Menu/ChooseMap/CHOOSEMAP(BACK).jpg"
+    	
     };
 
     public JLabel getLabel() { 

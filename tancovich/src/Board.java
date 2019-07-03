@@ -37,33 +37,36 @@ public class Board extends JPanel  implements ActionListener{
     private boolean enterControl = false;    
     private boolean escapeControl = false;
     
+    private final int[][] boxesPositionBorder = {
+    		{0, -1, 800, 1, 1}, //ARRIBA
+    		{800, 0, 1, 600, 1}, //DERECHA
+    		{0, 600, 800, 1, 1}, //ABAJO
+    		{-1, 0, 1, 600, 1} //IZQUIERDA
+    };
+    
     private final int[][] boxesPositionLvlOne = {
-    		{293, 136, 55, 338},
-            {460, 133, 52, 340}
+    		{293, 136, 55, 338, 0},
+            {460, 133, 52, 340, 0}    		
     };
     
     private final int[][] boxesPositionLvlTwo = {
-    		{100, 40, 20, 50},
-            {140, 40, 20, 50}
-    };
-    
-    private final int[][] boxesPositionLvlThree = {
-    		{100, 40, 20, 50},
-            {140, 40, 20, 50}
+    		{292, 0, 250, 118, 1},
+            {292, 255, 250, 112, 1},
+    		{292, 503, 250, 92, 1}
     };
     
     private final int[][] tankPositions = {
     		
             {1, 40, 60},
             {2, 720, 480}
-    };
-    
+    };    
     
     public static enum STATE {
     	STARTMENU,
     	MAINMENU,
     	HELP,
     	CREDITS,
+    	CHOOSEMAP,
     	GAME,
     	PAUSE,
     	GAMEOVER
@@ -78,8 +81,9 @@ public class Board extends JPanel  implements ActionListener{
     	{720,780,535,580}, //EXIT
     	{265,500,425,475}, //PRESS ENTER
     	{270,530,240,272}, //RESUME
-    	{265,530,320,350} //BACK TO MENU
-    	
+    	{265,530,320,350}, //BACK TO MENU
+    	{140,365,180,350}, //MAP 1
+    	{440,665,180,350} //MAP 2
     };
     
     public static STATE State = STATE.STARTMENU;
@@ -130,6 +134,7 @@ public class Board extends JPanel  implements ActionListener{
 
         initTanks();
         //initEnemies();
+        hideBars();
         initBars();
         initBoxes();
     }
@@ -188,21 +193,25 @@ public class Board extends JPanel  implements ActionListener{
     	
     	boxes = new ArrayList<>();
     	
+    	for (int[] p : boxesPositionBorder) {
+			Box newBox = new Box(p[0], p[1], p[2], p[3]);
+			if(p[4] == 1) newBox.setMissileInside(true);
+			boxes.add(newBox);			
+        }
+    	
     	switch (lvl) {
 		case 1:
 			for (int[] p : boxesPositionLvlOne) {
-				boxes.add(new Box(p[0], p[1], p[2], p[3]));
+				Box newBox = new Box(p[0], p[1], p[2], p[3]);
+				if(p[4] == 1) newBox.setMissileInside(true);
+				boxes.add(newBox);				
 	        }
 			break;
 		case 2:
 			for (int[] p : boxesPositionLvlTwo) {
-				boxes.add(new Box(p[0], p[1], p[2], p[3]));
-	        }
-			break;
-			
-		case 3:
-			for (int[] p : boxesPositionLvlThree) {
-				boxes.add(new Box(p[0], p[1], p[2], p[3]));
+				Box newBox = new Box(p[0], p[1], p[2], p[3]);
+				if(p[4] == 1) newBox.setMissileInside(true);
+				boxes.add(newBox);
 	        }
 			break;
 
@@ -261,6 +270,15 @@ public class Board extends JPanel  implements ActionListener{
 				State = STATE.MAINMENU;
 			}
 		}
+		if (State == STATE.CHOOSEMAP) {
+			menu.render(g,render);
+			if(Keyboard.keydown[27] && !escapeControl)
+			{
+				escapeControl = true;
+				render = 1;
+				State = STATE.MAINMENU;
+			}
+		}
 		if(State == STATE.GAME) {
 			drawBackground(g);
 			drawObjects(g);
@@ -307,8 +325,12 @@ public class Board extends JPanel  implements ActionListener{
     
     private void drawBackground(Graphics g)
     {
+    	String mapImage = "";
+    	if(lvl == 1) mapImage = "Resources/track.png";
+    	else if(lvl == 2) mapImage = "Resources/track2.png";
+    	
     	try {
-        	background = ImageIO.read(getClass().getResourceAsStream("Resources/track.png"));
+        	background = ImageIO.read(getClass().getResourceAsStream(mapImage));
         } catch (IOException ex) {
             Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -370,8 +392,10 @@ public class Board extends JPanel  implements ActionListener{
             }
         }*/
         
-        for (Box box : boxes) {       	
-        	g.drawRect(box.getX(), box.getY(), box.getWidth(), box.getHeight());
+    	Color color = new Color(0,0,0,0);
+        for (Box box : boxes) {        	
+        	g.setColor(color);
+        	g.drawRect(box.getX(), box.getY(), box.getWidth(), box.getHeight());        	
         }
 
         g.setColor(Color.WHITE);
@@ -593,7 +617,7 @@ public class Board extends JPanel  implements ActionListener{
            	
             	Shape missileBound = missile.getShape();
             	
-            	if(Sprite.testIntersection(boxBound, missileBound)) {
+            	if(!box.isMissileInside() && Sprite.testIntersection(boxBound, missileBound)) {
             		
             		//Superior e inferior
             		if((missile.getY() < box.getY() && isBetween(missile.getX(),box.getX(),box.getX()+box.getWidth()-missile.getWidth())) || 
@@ -671,6 +695,22 @@ public class Board extends JPanel  implements ActionListener{
 				render = 14;
 			}
     	}
+    	else if(State == STATE.CHOOSEMAP) 
+    	{
+    		if(isBetween(mx,Buttons[8][0],Buttons[8][1]) && isBetween(my,Buttons[8][2],Buttons[8][3])) {
+				render = 18;
+			}
+    		else if(isBetween(mx,Buttons[9][0],Buttons[9][1]) && isBetween(my,Buttons[9][2],Buttons[9][3])) {
+				render = 19;
+			}
+    		else if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
+				render = 20;
+			}
+			else
+			{
+				render = 17;
+			}
+    	}
     	else if(State == STATE.PAUSE)
     	{
     		if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
@@ -708,7 +748,7 @@ public class Board extends JPanel  implements ActionListener{
 		//Coordenadas X Y del mouse
 		int mx  = e.getX();
 		int my  = e.getY();
-		System.out.println("X: " + mx + " Y: " + my);
+		//System.out.println("X: " + mx + " Y: " + my);
 
 		if (State == STATE.STARTMENU) {
 			
@@ -721,8 +761,7 @@ public class Board extends JPanel  implements ActionListener{
 		if (State == STATE.MAINMENU) {
 			
 			if(isBetween(mx,Buttons[0][0],Buttons[0][1]) && isBetween(my,Buttons[0][2],Buttons[0][3])) {
-				initGame();
-				State = STATE.GAME;
+				State = STATE.CHOOSEMAP;
 			}
 			
 			if(isBetween(mx,Buttons[1][0],Buttons[1][1]) && isBetween(my,Buttons[1][2],Buttons[1][3])) {
@@ -761,9 +800,39 @@ public class Board extends JPanel  implements ActionListener{
 			}
 		}
 		
-		if(State == STATE.PAUSE || State == STATE.GAMEOVER) {
+		if(State == STATE.CHOOSEMAP) {
+			
+			if(isBetween(mx,Buttons[8][0],Buttons[8][1]) && isBetween(my,Buttons[8][2],Buttons[8][3])) {
+				setLvl(1);
+				initGame();
+				State = STATE.GAME;
+			}
+			if(isBetween(mx,Buttons[9][0],Buttons[9][1]) && isBetween(my,Buttons[9][2],Buttons[9][3])) {
+				setLvl(2);
+				initGame();
+				State = STATE.GAME;
+			}
+			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
+				render = 1;
+				State = STATE.MAINMENU;
+			}
+		}
+		
+		if(State == STATE.PAUSE) {
 			
 			if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
+				State = STATE.GAME;
+			}
+			
+			if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
+				State = STATE.MAINMENU;
+			}
+		}
+		
+		if(State == STATE.GAMEOVER) {
+			
+			if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
+				initGame();
 				State = STATE.GAME;
 			}
 			
