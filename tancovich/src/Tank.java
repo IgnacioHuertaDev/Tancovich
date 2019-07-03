@@ -162,10 +162,12 @@ public class Tank extends Sprite implements Entity{
         if(id == 1)
         {
         	loadImage("Resources/tankRed.png");
+        	r = -45;
         }
         else if(id == 2)
         {
         	loadImage("Resources/tankBlue.png");
+        	r = 135;
         }
         
         missiles = new ArrayList<>();
@@ -212,13 +214,13 @@ public class Tank extends Sprite implements Entity{
         	if (getId()== 1) {
             	setX(40);
             	setY(60);
-            	setR(0);	
+            	setR(-45);	
         	}
         	else if (getId() == 2) {
             	
         		setX(720);
             	setY(480);
-            	setR(0);	
+            	setR(135);	
         	}
         }
     }
