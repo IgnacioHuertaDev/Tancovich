@@ -21,8 +21,8 @@ import javax.swing.Timer;
 public class Board extends JPanel  implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
-    public static int BOARD_WIDTH = 800;
-    public static int BOARD_HEIGHT = 600;
+    public static final int BOARD_WIDTH = 800;
+    public static final int BOARD_HEIGHT = 600;
     private final int DELAY = 40;
     
     private int lvl = 0;
@@ -31,44 +31,13 @@ public class Board extends JPanel  implements ActionListener{
     private List<Tank> tanks;
     private List<Box> boxes;
     private List<ProgressBar> bars;
-    private List<Hearts> hearts;
+    private List<Heart> hearts;
     //private List<Enemy> enemies;
     
     private Timer timer;
     private Menu menu;
     private boolean enterControl = false;
-    private boolean escapeControl = false;
-    
-    private final int[][] tankPositions = {
-    		
-            {1, 40, 60},
-            {2, 720, 480}
-    };
-    
-    private final int[][] boxesPositionBorder = {
-    		{0, -1, 800, 1, 0}, //ARRIBA
-    		{800, 0, 1, 600, 0}, //DERECHA
-    		{0, 600, 800, 1, 0}, //ABAJO
-    		{-1, 0, 1, 600, 0} //IZQUIERDA
-    };
-    
-    private final int[][] boxesPositionLvlOne = {
-    		{293, 136, 55, 338, 0},
-            {460, 133, 52, 340, 0}    		
-    };
-    
-    private final int[][] boxesPositionLvlTwo = {
-    		{292, 0, 250, 118, 1},
-            {292, 255, 250, 112, 1},
-    		{292, 503, 250, 92, 1}
-    };
-    
-    private final int[][] heartsPositions = {
-    		
-            {80, 20},
-            {420, 20}
-    };
-    
+    private boolean escapeControl = false;    
     
     public static enum STATE {
     	STARTMENU,
@@ -109,7 +78,15 @@ public class Board extends JPanel  implements ActionListener{
     	this.lvl = lvl;
     }
     
-    public List<Hearts> getHearts() {
+    public List<ProgressBar> getBars() {
+		return bars;
+	}
+
+	public void setBars(List<ProgressBar> bars) {
+		this.bars = bars;
+	}
+
+	public List<Heart> getHearts() {
 		return hearts;
 	}
     
@@ -156,12 +133,13 @@ public class Board extends JPanel  implements ActionListener{
 
         tanks = new ArrayList<>();
 
-        for (int[] p : tankPositions) {
-        	tanks.add(new Tank(p[0], p[1], p[2]));
+        for (int i = 0; i < Tank.tankPositions.length; i++) {
+        	
+        	tanks.add(new Tank(i+1, Tank.tankPositions[i][0], Tank.tankPositions[i][1], Tank.tankPositions[i][2]));
         }
     }
 
-   /* public void initEnemies() {
+	/*public void initEnemies() {
 
         enemies = new ArrayList<>();
 
@@ -175,6 +153,7 @@ public class Board extends JPanel  implements ActionListener{
     	bars = new ArrayList<>();
     	
     	for (Tank tank : tanks) {
+    		
     		ProgressBar bar = new ProgressBar(tank.getId());
             bar.setValue(tank.getHealth());      
             bar.setBounds(((tank.getId()-1)*340)+100, 20, 300, 20);
@@ -190,7 +169,7 @@ public class Board extends JPanel  implements ActionListener{
     	
     	for (Tank tank : tanks) {
     		
-	    	hearts.add(new Hearts (heartsPositions[tank.getId()-1][0], heartsPositions[tank.getId()-1][1], tank.getId()));
+	    	hearts.add(new Heart (Heart.heartsPositions[tank.getId()-1][0], Heart.heartsPositions[tank.getId()-1][1], tank.getId()));
     	}
     }
     
@@ -209,30 +188,33 @@ public class Board extends JPanel  implements ActionListener{
     	
     	boxes = new ArrayList<>();
     	
-    	for (int[] p : boxesPositionBorder) {
+    	for (int[] p : Box.boxesPositionBorder) {
+    		
 			Box newBox = new Box(p[0], p[1], p[2], p[3]);
 			if(p[4] == 1) newBox.setMissileInside(true);
 			boxes.add(newBox);			
         }
     	
     	switch (lvl) {
-		case 1:
-			for (int[] p : boxesPositionLvlOne) {
-				Box newBox = new Box(p[0], p[1], p[2], p[3]);
-				if(p[4] == 1) newBox.setMissileInside(true);
-				boxes.add(newBox);				
-	        }
-			break;
-		case 2:
-			for (int[] p : boxesPositionLvlTwo) {
-				Box newBox = new Box(p[0], p[1], p[2], p[3]);
-				if(p[4] == 1) newBox.setMissileInside(true);
-				boxes.add(newBox);
-	        }
-			break;
-
-		default:			
-			break;
+			case 1:
+				for (int[] p : Box.boxesPositionLvlOne) {
+					
+					Box newBox = new Box(p[0], p[1], p[2], p[3]);
+					if(p[4] == 1) newBox.setMissileInside(true);
+					boxes.add(newBox);				
+		        }
+				break;
+			case 2:
+				for (int[] p : Box.boxesPositionLvlTwo) {
+					
+					Box newBox = new Box(p[0], p[1], p[2], p[3]);
+					if(p[4] == 1) newBox.setMissileInside(true);
+					boxes.add(newBox);
+		        }
+				break;
+	
+			default:			
+				break;
 		}
     }
 
@@ -363,9 +345,19 @@ public class Board extends JPanel  implements ActionListener{
             	if(mine.isVisible()) {
             		
                     g.drawImage(mine.getImage(), mine.getX(), mine.getY(), this);
-                    if(tank.isMineControl() == true)
-                    g.drawString( tank.getMinesNumber() + " mines left.", tank.getX()-12, tank.getY()-5);
+                    if(tank.getMineControl() > 0) g.drawString(tank.getMinesNumber() + " mines left.", tank.getX()-12, tank.getY()-5);
             	}
+            }
+            
+            List<Missile> ms = tank.getMissiles();
+
+            for (Missile missile : ms) {
+                if (missile.isVisible()) {
+                	
+                    g.drawImage(missile.getImage(), missile.getX(), missile.getY(), this);
+                    if(tank.getMissileControl() > 0) g.drawString( tank.getMissileNumber() + " missiles left.", tank.getX()-12, tank.getY()-5);
+                    if(!tank.canFire()) g.drawString("No missiles left.", tank.getX()-12, tank.getY()-5);
+                }
             }
     		            
     		if (tank.isVisible()) {
@@ -373,27 +365,15 @@ public class Board extends JPanel  implements ActionListener{
             	g.drawImage(tank.getImage(), tank.getX(), tank.getY(), this);
             }
     		
-    		List<Hearts> ht = getHearts();
+    		List<Heart> ht = getHearts();
     		
-    		for (Hearts hearts : ht) {
+    		for (Heart hearts : ht) {
+    			
                 if (hearts.isVisible()) {
                 	
                     g.drawImage(hearts.getImage(), hearts.getX(), hearts.getY(), this);
                 }
     		}
-    		
-    		List<Missile> ms = tank.getMissiles();
-
-            for (Missile missile : ms) {
-                if (missile.isVisible()) {
-                	
-                    g.drawImage(missile.getImage(), missile.getX(), missile.getY(), this);
-                    if(tank.isFireControl() == true)
-                    g.drawString( tank.getMissileNumber() + " missiles left.", tank.getX()-12, tank.getY()-5);
-                    if(!tank.CanFire()) g.drawString("No missiles left.", tank.getX()-12, tank.getY()-5);
-                }
-            }   
-            
     	}       
 
         /*for (Enemy enemy : enemies) {
@@ -432,18 +412,15 @@ public class Board extends JPanel  implements ActionListener{
     		int tankCounter = 0;
     		for (Tank tank: tanks)
 	    	{
-    			if(tank.isVisible()) tankCounter++;
-	        	updateTanks(tank);
+    			if(tank.getLifes() > 0) tankCounter++;
+    			updateTanks(tank);
 		        updateMissiles(tank);
+		        updateBars(tank);		        
 		        updateHearts(tank);
 		        updateMines(tank);
 		        checkCollisions(tank);
 	    	}
-    		if(tankCounter < 2)
-    		{
-    			render = 11;
-    			State = STATE.GAMEOVER;
-    		}
+    		if(tankCounter < 2) menu.drawGameOver();    		
     		//updateEnemies();
     		repaint();
 		}    	
@@ -451,11 +428,8 @@ public class Board extends JPanel  implements ActionListener{
     
     private void updateTanks(Tank tank) {
 
-        if (tank.isVisible()) {
-
-            tank.update();
-            if(tank.getMissileNumber() <= 1) tank.setTimer(tank.getTimer()+1);
-        }
+    	tank.update();
+    	if(tank.getMissileNumber() < 1) tank.setTimer(tank.getTimer()+1);
     }
 
     private void updateMissiles(Tank tank) {
@@ -473,12 +447,24 @@ public class Board extends JPanel  implements ActionListener{
         }        
     }
     
+    private void updateBars (Tank tank) {
+        
+    	List<ProgressBar> bs = getBars();
+    	
+        for (int i = 0; i < bs.size(); i++) {
+
+        	ProgressBar b = bs.get(i);
+   			if(b.getTankId() == tank.getId()) b.setValue(tank.getHealth());
+        } 
+    }
+    
     private void updateHearts (Tank tank) {
         
-    	List<Hearts> ht = getHearts();
+    	List<Heart> ht = getHearts();
+    	
         for (int i = 0; i < ht.size(); i++) {
 
-        	Hearts h = ht.get(i);
+        	Heart h = ht.get(i);
 
             if (h.isVisible()) {
             	h.setNumberLifes(tank.getLifes());
@@ -523,15 +509,10 @@ public class Board extends JPanel  implements ActionListener{
 //            }
 //        }
 //    }*/
-//
-    public void checkTanks()
-    {
-    	
-    }
     
     public void checkCollisions(Tank tank) {
 
-    	if(tank.getCollisionedBox() != null) tank.restoreMovement(tank.getCollisionedBox());
+    	if(tank.getCollisionedBox() != null) Physics.restoreTankMovement(tank, tank.getCollisionedBox());
     	
     	Shape tankBound = tank.getShape();
 
@@ -539,7 +520,7 @@ public class Board extends JPanel  implements ActionListener{
 
         	Shape enemyBound = enemy.getShape();
 
-            if (Sprite.testIntersection(enemyBound,tankBound)) {
+            if (Physics.testIntersection(enemyBound,tankBound)) {
 
                 tank.setVisible(false);
                 enemy.setVisible(false);
@@ -557,7 +538,7 @@ public class Board extends JPanel  implements ActionListener{
 
                 Shape enemyBound = enemy.getShape();
 
-                if (Sprite.testIntersection(missileBound,enemyBound)) {
+                if (Physics.testIntersection(missileBound,enemyBound)) {
                 	
                 	missile.setVisible(false);                   
                     enemy.destroyEnemy();
@@ -568,24 +549,14 @@ public class Board extends JPanel  implements ActionListener{
 
                 Shape tankeBound = tankObjective.getShape();
 
-                if (Sprite.testIntersection(missileBound, tankeBound)) {
-                	if((missile.getBounce() >= 1 && missile.getShooterId() == tank.getId()) || (missile.getShooterId() != tankObjective.getId())) {
-                		if(tankObjective.visible) {
-                		tankObjective.setHealth(tankObjective.getHealth() - missile.getDamage());   
-                		for (int i = 0; i < bars.size(); i++) {
-                			if(bars.get(i).getTankId() == tankObjective.getId()) {
-                				bars.get(i).setValue(tankObjective.getHealth());
-                			}
-                		}
-                		missile.setVisible(false); 
-                		}
-                	}                	           	                	                 
+                if (Physics.testIntersection(missileBound, tankeBound)) {
+                	
+                	Physics.checkCollisionMissileTank(missile,tankObjective);                	
                 }
             }
         }
 	       
-        List<Mine> minas = tank.getMines();
-	
+        List<Mine> minas = tank.getMines();	
 	        
         for (Mine mine : minas) {
 	
@@ -595,25 +566,16 @@ public class Board extends JPanel  implements ActionListener{
                 
         		Shape tankeBound = tankObjective.getShape();
 	        	
-                if (Sprite.testIntersection(mineBound,tankeBound)) {
-                	if(mine.getShooterId() != tankObjective.getId() || mine.getShooterId() == tank.getId() && mine.isAbove()) {
-                		if(tankObjective.visible) {
-                		tankObjective.setHealth(tankObjective.getHealth() - mine.getDamage());   
-                		for (int i = 0; i < bars.size(); i++) {
-                			if(bars.get(i).getTankId() == tankObjective.getId()) {
-                				bars.get(i).setValue(tankObjective.getHealth());
-                			}
-                		}
-                		mine.setExplode(true);
-                		}
-                	}
+                if (Physics.testIntersection(mineBound,tankeBound)) {
+                	
+                	Physics.checkCollisionMineTank(mine, tankObjective);
 	        	}
 	        }
-        	for (Missile m : missiles) {
-        		Shape missileBound = m.getShape();
-        		if(Sprite.testIntersection(mineBound, missileBound)) {
-        			mine.setExplode(true);
-        			m.setVisible(false);
+        	for (Missile missile : missiles) {
+        		Shape missileBound = missile.getShape();
+        		if(Physics.testIntersection(mineBound, missileBound)) {
+        			
+        			Physics.checkCollisionMineMissile(mine, missile);        			
         		}
         	}
         }
@@ -623,38 +585,21 @@ public class Board extends JPanel  implements ActionListener{
 
         	Shape boxBound = box.getShape();
         	
-        	if (Sprite.testIntersection(boxBound,tankBound))
+        	if (Physics.testIntersection(boxBound,tankBound))
         	{
-        		tank.banMovement(box);
+        		Physics.checkCollisionTankBox(tank, box);
         	}
 	 
             for (Missile missile : missiles) {
            	
             	Shape missileBound = missile.getShape();
             	
-            	if(!box.isMissileInside() && Sprite.testIntersection(boxBound, missileBound)) {
+            	if(!box.isMissileInside() && Physics.testIntersection(boxBound, missileBound)) {
             		
-            		//Superior e inferior
-            		if((missile.getY() < box.getY() && isBetween(missile.getX(),box.getX(),box.getX()+box.getWidth()-missile.getWidth())) || 
-            		(missile.getY() > box.getY() + box.getHeight() - missile.getHeight() && isBetween(missile.getX(),box.getX(),box.getX()+box.getWidth()-missile.getWidth())))
-            		{
-            			missile.setR(180-missile.getR());
-            		}            		
-            		//Izquierdo y derecho
-            		if(missile.getX() < box.getX() && isBetween(missile.getY(),box.getY(),box.getY()+box.getHeight()-missile.getHeight()) || missile.getX() > box.getX() + box.getWidth() - missile.getWidth() && isBetween(missile.getY(),box.getY(),box.getY()+box.getHeight()-missile.getHeight()))
-            		{
-            			missile.setR(missile.getR()*-1);
-            		}
-            		
-            		//Agrego rebote
-            		missile.setBounce(missile.getBounce()+1);
+            		Physics.checkCollisionMissileBox(missile,box);
             	}
             }
         }
-    }
-    
-    public static boolean isBetween(int x, int lower, int upper) {
-    	return lower <= x && x <= upper;
     }
 
     @Override

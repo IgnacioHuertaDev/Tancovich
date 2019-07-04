@@ -3,15 +3,12 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.imageio.ImageIO;
-import javax.swing.JLabel;
 
 public class Menu {
 	
 	private Board board;
     private BufferedImage background;
-    private JLabel label = new JLabel("");
     private String[] renders = {
     	"Resources/Menu/LOAD2.jpg", //0
     	"Resources/Menu/MainMenu/MENU1(PASIVO).jpg", 
@@ -54,10 +51,6 @@ public class Menu {
 		super();
 		this.board = board;
 	}
-
-	public JLabel getLabel() { 
-    	return this.label;
-    }
     
     public void render(Graphics g, int render) {
 		try {
@@ -68,4 +61,10 @@ public class Menu {
     	g.drawImage(background, 0, 0, null);
     	board.repaint();
 	}
+    
+    public void drawGameOver()
+    {
+    	board.setRender(11);
+    	board.setState(Board.STATE.GAMEOVER);
+    }
 }
