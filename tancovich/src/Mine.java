@@ -3,7 +3,7 @@ public class Mine extends Sprite implements Entity {
     
 	private int shooterId;
     private int damage;
-    private boolean explode = false;
+    private boolean exploded = false;
     private int timer = 0;
     
 	public Mine(int x, int y, int shooter) {
@@ -12,25 +12,7 @@ public class Mine extends Sprite implements Entity {
         setShooterId(shooter);
 		init();
 	}
-    
-	public void init() {
-
-        loadImage("Resources/mina.png");
-
-    }
-
-    public void update() {
-          
-		if (isAbove()) loadImage("Resources/minaOn.png");
-
-		if(isExplode()) {
-			if(isAlive()) setAlive(false);
-			setDamage();
-			explodeSprite(30); 
-		}		
-
-    }
-
+	
 	public int getShooterId() {
 		return shooterId;
 	}
@@ -43,23 +25,20 @@ public class Mine extends Sprite implements Entity {
 		return damage;
 	}
 
-	public void setDamage() {
-		this.damage = randomWithRange(35, 55);
-		//Cuando la mina explota, el daño se vuelve cero para que la animacion no afecte al tanque
-		if(isExplode()== true) this.damage = 0;
+	public void setDamage() {		
+		this.damage = Physics.randomWithRange(35, 55);
 	}
-	int randomWithRange(int min, int max)
-	{
-	   int range = (max - min) + 1;     
-	   return (int)(Math.random() * range) + min;
+	
+	public void setDamage(int damage) {		
+		this.damage = damage;
 	}
 
-	public boolean isExplode() {
-		return explode;
+	public boolean isExploded() {
+		return exploded;
 	}
 
-	public void setExplode(boolean explode) {
-		this.explode = explode;
+	public void setExploded(boolean exploded) {
+		this.exploded = exploded;
 	}
 
 	public int getTimer() {
@@ -69,8 +48,29 @@ public class Mine extends Sprite implements Entity {
 	public void setTimer(int timer) {
 		this.timer = timer;
 	}
+	
 	public boolean isAbove() {
 		return getTimer() > 100;
 	}
+    
+	public void init() {
 
+        loadMine();
+    }
+	
+	public void loadMine()
+	{
+		loadImage("Resources/mina.png");
+	}
+
+    public void update() {
+          
+		if(isAbove()) loadMine();
+
+		if(isExploded() && isAlive()) 
+		{
+			if(isAlive()) setAlive(false);
+			explodeSprite(30);
+		}
+    }
 }
