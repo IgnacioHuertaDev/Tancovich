@@ -7,7 +7,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,26 +21,35 @@ import javax.swing.Timer;
 public class Board extends JPanel  implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
-    private final int B_WIDTH = 800;
-    private final int B_HEIGHT = 600;
+    public static int BOARD_WIDTH = 800;
+    public static int BOARD_HEIGHT = 600;
     private final int DELAY = 40;
     
-    private BufferedImage background;
-    private List<Tank> tanks;
-    //private List<Enemy> enemies;
-    private List<Box> boxes;
     private int lvl = 0;
+    private BufferedImage background;
+    
+    private List<Tank> tanks;
+    private List<Box> boxes;
     private List<ProgressBar> bars;
+    private List<Hearts> hearts;
+    //private List<Enemy> enemies;
+    
     private Timer timer;
     private Menu menu;
-    private boolean enterControl = false;    
+    private boolean enterControl = false;
     private boolean escapeControl = false;
     
+    private final int[][] tankPositions = {
+    		
+            {1, 40, 60},
+            {2, 720, 480}
+    };
+    
     private final int[][] boxesPositionBorder = {
-    		{0, -1, 800, 1, 1}, //ARRIBA
-    		{800, 0, 1, 600, 1}, //DERECHA
-    		{0, 600, 800, 1, 1}, //ABAJO
-    		{-1, 0, 1, 600, 1} //IZQUIERDA
+    		{0, -1, 800, 1, 0}, //ARRIBA
+    		{800, 0, 1, 600, 0}, //DERECHA
+    		{0, 600, 800, 1, 0}, //ABAJO
+    		{-1, 0, 1, 600, 0} //IZQUIERDA
     };
     
     private final int[][] boxesPositionLvlOne = {
@@ -55,11 +63,12 @@ public class Board extends JPanel  implements ActionListener{
     		{292, 503, 250, 92, 1}
     };
     
-    private final int[][] tankPositions = {
+    private final int[][] heartsPositions = {
     		
-            {1, 40, 60},
-            {2, 720, 480}
-    };    
+            {80, 20},
+            {420, 20}
+    };
+    
     
     public static enum STATE {
     	STARTMENU,
@@ -72,21 +81,7 @@ public class Board extends JPanel  implements ActionListener{
     	GAMEOVER
     };
     
-    public int[][] Buttons = {
-    	
-    	{327,460,230,280}, //PLAY
-    	{327,460,310,350}, //HELP
-    	{327,460,380,420}, //CREDITS
-    	{20,100,535,580}, //BACK
-    	{720,780,535,580}, //EXIT
-    	{265,500,425,475}, //PRESS ENTER
-    	{270,530,240,272}, //RESUME
-    	{265,530,320,350}, //BACK TO MENU
-    	{140,365,180,350}, //MAP 1
-    	{440,665,180,350} //MAP 2
-    };
-    
-    public static STATE State = STATE.STARTMENU;
+    public STATE State = STATE.STARTMENU;
     private int render;
     
     /*private final int[][] enemyPositions = {
@@ -101,6 +96,10 @@ public class Board extends JPanel  implements ActionListener{
             {810, 220}, {860, 20}, {740, 180},
             {820, 128}, {490, 170}, {700, 30}
     };*/
+    
+    public Board() {
+        initBoard();
+    }
 
     public int getLvl() {
     	return lvl;
@@ -110,32 +109,46 @@ public class Board extends JPanel  implements ActionListener{
     	this.lvl = lvl;
     }
     
-    public Board() {
-        initBoard();
+    public List<Hearts> getHearts() {
+		return hearts;
+	}
+    
+    public void setRender(int render)
+    {
+    	this.render = render;
     }
+    
+    public STATE getState() {
+		return State;
+	}
 
-    private void initBoard() {
+	public void setState(STATE state) {
+		State = state;
+	}
+
+	private void initBoard() {
 
         setFocusable(true);       
-        setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
+        setPreferredSize(new Dimension(Board.BOARD_WIDTH, Board.BOARD_HEIGHT));
         MouseInput mouseListener = new MouseInput(this);
         addMouseListener(mouseListener);
         addMouseMotionListener(mouseListener);
-        menu = new Menu();       
+        menu = new Menu(this);
         timer = new Timer(DELAY, this);
         timer.start();
     }
     
-    private void initGame() {
+    public void initGame() {
     	
-    	if(lvl == 0) {
-        	lvl = 1;
+    	if(getLvl() == 0) {
+    		setLvl(1);
         }
 
         initTanks();
         //initEnemies();
         hideBars();
         initBars();
+        initHearts();
         initBoxes();
     }
     
@@ -147,13 +160,6 @@ public class Board extends JPanel  implements ActionListener{
         	tanks.add(new Tank(p[0], p[1], p[2]));
         }
     }
-//    public void initHearts() {
-//    	hearts = new ArrayList<>();
-//    	
-//        for (int[] p : heartsPositions) {
-//        	hearts.add(new Hearts(p[0], p[1]));
-//        }
-//    }
 
    /* public void initEnemies() {
 
@@ -168,13 +174,23 @@ public class Board extends JPanel  implements ActionListener{
     	
     	bars = new ArrayList<>();
     	
-    	for (Tank t : tanks) {    		
-    		ProgressBar p = new ProgressBar(t.getId());
-            p.setValue(t.getHealth());      
-            p.setBounds(((t.getId()-1)*340)+100, 20, 300, 20);
-            p.setVisible(true);
-            bars.add(p);
-            this.add(p);
+    	for (Tank tank : tanks) {
+    		ProgressBar bar = new ProgressBar(tank.getId());
+            bar.setValue(tank.getHealth());      
+            bar.setBounds(((tank.getId()-1)*340)+100, 20, 300, 20);
+            bar.setVisible(true);
+            bars.add(bar);
+            this.add(bar);
+    	}
+    }
+    
+    public void initHearts() {
+    	
+    	hearts = new ArrayList<>();
+    	
+    	for (Tank tank : tanks) {
+    		
+	    	hearts.add(new Hearts (heartsPositions[tank.getId()-1][0], heartsPositions[tank.getId()-1][1], tank.getId()));
     	}
     }
     
@@ -243,8 +259,7 @@ public class Board extends JPanel  implements ActionListener{
 			if(Keyboard.keydown[10] && !enterControl)
 			{
 				enterControl = true;
-				initGame();
-				State = STATE.GAME;
+				State = STATE.CHOOSEMAP;
 			}
 			if(Keyboard.keydown[27] && !escapeControl)
 			{
@@ -358,7 +373,7 @@ public class Board extends JPanel  implements ActionListener{
             	g.drawImage(tank.getImage(), tank.getX(), tank.getY(), this);
             }
     		
-    		List<Hearts> ht = tank.getHeart();
+    		List<Hearts> ht = getHearts();
     		
     		for (Hearts hearts : ht) {
                 if (hearts.isVisible()) {
@@ -428,10 +443,10 @@ public class Board extends JPanel  implements ActionListener{
     		{
     			render = 11;
     			State = STATE.GAMEOVER;
-    		}    			
+    		}
     		//updateEnemies();
-		}
-    	repaint();
+    		repaint();
+		}    	
     }
     
     private void updateTanks(Tank tank) {
@@ -460,7 +475,7 @@ public class Board extends JPanel  implements ActionListener{
     
     private void updateHearts (Tank tank) {
         
-    	List<Hearts> ht = tank.getHeart();
+    	List<Hearts> ht = getHearts();
         for (int i = 0; i < ht.size(); i++) {
 
         	Hearts h = ht.get(i);
@@ -638,209 +653,9 @@ public class Board extends JPanel  implements ActionListener{
         }
     }
     
-    public boolean isBetween(int x, int lower, int upper) {
+    public static boolean isBetween(int x, int lower, int upper) {
     	return lower <= x && x <= upper;
     }
-    
-    public void mouseMoved(MouseEvent e) {
-    	
-    	//Coordenadas X Y del mouse
-    	int mx  = e.getX();
-    	int my  = e.getY();
-    	//System.out.println("X: " + mx + " Y: " + my);
-    	
-    	if (State == STATE.MAINMENU) {
-			
-			if(isBetween(mx,Buttons[0][0],Buttons[0][1]) && isBetween(my,Buttons[0][2],Buttons[0][3])) {
-				render = 2;
-			}
-			
-			else if(isBetween(mx,Buttons[1][0],Buttons[1][1]) && isBetween(my,Buttons[1][2],Buttons[1][3])) {
-				render = 3;
-			}
-			
-			else if(isBetween(mx,Buttons[2][0],Buttons[2][1]) && isBetween(my,Buttons[2][2],Buttons[2][3])) {
-				render = 4;
-			}
-			
-			else if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 5;
-			}
-			
-			else if(isBetween(mx,Buttons[4][0],Buttons[4][1]) && isBetween(my,Buttons[4][2],Buttons[4][3])) {
-				render = 6;	
-			}
-			
-			else {
-				render = 1;
-			}
-		}
-    	else if(State == STATE.HELP) 
-    	{
-    		if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 16;
-			}			
-			else
-			{
-				render = 7;
-			}
-    	}
-    	else if(State == STATE.CREDITS) 
-    	{
-    		if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 15;
-			}			
-			else
-			{
-				render = 14;
-			}
-    	}
-    	else if(State == STATE.CHOOSEMAP) 
-    	{
-    		if(isBetween(mx,Buttons[8][0],Buttons[8][1]) && isBetween(my,Buttons[8][2],Buttons[8][3])) {
-				render = 18;
-			}
-    		else if(isBetween(mx,Buttons[9][0],Buttons[9][1]) && isBetween(my,Buttons[9][2],Buttons[9][3])) {
-				render = 19;
-			}
-    		else if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 20;
-			}
-			else
-			{
-				render = 17;
-			}
-    	}
-    	else if(State == STATE.PAUSE)
-    	{
-    		if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
-				render = 9;
-			}
-			
-			else if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
-				render = 10;
-			}
-			
-			else
-			{
-				render = 8;
-			}
-    	}
-    	else if(State == STATE.GAMEOVER)
-    	{
-    		if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
-				render = 12;
-			}
-			
-			else if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
-				render = 13;
-			}
-			
-			else
-			{
-				render = 11;
-			}
-    	}
-    }
-	
-	public void mousePressed(MouseEvent e) { //Mouse Action
-		
-		//Coordenadas X Y del mouse
-		int mx  = e.getX();
-		int my  = e.getY();
-		//System.out.println("X: " + mx + " Y: " + my);
-
-		if (State == STATE.STARTMENU) {
-			
-			if(isBetween(mx,Buttons[5][0],Buttons[5][1]) && isBetween(my,Buttons[5][2],Buttons[5][3])) {
-				render = 1;
-				State = STATE.MAINMENU;
-			}
-		}
-		
-		if (State == STATE.MAINMENU) {
-			
-			if(isBetween(mx,Buttons[0][0],Buttons[0][1]) && isBetween(my,Buttons[0][2],Buttons[0][3])) {
-				State = STATE.CHOOSEMAP;
-			}
-			
-			if(isBetween(mx,Buttons[1][0],Buttons[1][1]) && isBetween(my,Buttons[1][2],Buttons[1][3])) {
-				render = 7;
-				State = STATE.HELP;
-			}
-			
-			if(isBetween(mx,Buttons[2][0],Buttons[2][1]) && isBetween(my,Buttons[2][2],Buttons[2][3])) {
-				render = 14;
-				State = STATE.CREDITS;
-			}
-			
-			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 0;
-				State = STATE.STARTMENU;
-			}
-			
-			if(isBetween(mx,Buttons[4][0],Buttons[4][1]) && isBetween(my,Buttons[4][2],Buttons[4][3])) {
-				System.exit(1);		
-			}
-		}
-		
-		if(State == STATE.HELP) {
-			
-			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 1;
-				State = STATE.MAINMENU;
-			}
-		}
-		
-		if(State == STATE.CREDITS) {
-			
-			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 1;
-				State = STATE.MAINMENU;
-			}
-		}
-		
-		if(State == STATE.CHOOSEMAP) {
-			
-			if(isBetween(mx,Buttons[8][0],Buttons[8][1]) && isBetween(my,Buttons[8][2],Buttons[8][3])) {
-				setLvl(1);
-				initGame();
-				State = STATE.GAME;
-			}
-			if(isBetween(mx,Buttons[9][0],Buttons[9][1]) && isBetween(my,Buttons[9][2],Buttons[9][3])) {
-				setLvl(2);
-				initGame();
-				State = STATE.GAME;
-			}
-			if(isBetween(mx,Buttons[3][0],Buttons[3][1]) && isBetween(my,Buttons[3][2],Buttons[3][3])) {
-				render = 1;
-				State = STATE.MAINMENU;
-			}
-		}
-		
-		if(State == STATE.PAUSE) {
-			
-			if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
-				State = STATE.GAME;
-			}
-			
-			if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
-				State = STATE.MAINMENU;
-			}
-		}
-		
-		if(State == STATE.GAMEOVER) {
-			
-			if(isBetween(mx,Buttons[6][0],Buttons[6][1]) && isBetween(my,Buttons[6][2],Buttons[6][3])) {
-				initGame();
-				State = STATE.GAME;
-			}
-			
-			if(isBetween(mx,Buttons[7][0],Buttons[7][1]) && isBetween(my,Buttons[7][2],Buttons[7][3])) {
-				State = STATE.MAINMENU;
-			}
-		}
-	}
 
     @Override
     protected void processKeyEvent(KeyEvent e) {

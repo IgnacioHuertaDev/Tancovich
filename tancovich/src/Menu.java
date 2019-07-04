@@ -9,6 +9,7 @@ import javax.swing.JLabel;
 
 public class Menu {
 	
+	private Board board;
     private BufferedImage background;
     private JLabel label = new JLabel("");
     private String[] renders = {
@@ -32,11 +33,29 @@ public class Menu {
     	"Resources/Menu/ChooseMap/CHOOSEMAP(PASIVO).jpg", //17    	
     	"Resources/Menu/ChooseMap/CHOOSEMAP(LVL1).jpg",
     	"Resources/Menu/ChooseMap/CHOOSEMAP(LVL2).jpg",
-    	"Resources/Menu/ChooseMap/CHOOSEMAP(BACK).jpg"
-    	
+    	"Resources/Menu/ChooseMap/CHOOSEMAP(BACK).jpg"    	
+    };
+    
+    public static int[][] Buttons = {
+        	
+    	{327,460,230,280}, //PLAY
+    	{327,460,310,350}, //HELP
+    	{327,460,380,420}, //CREDITS
+    	{20,100,535,580}, //BACK
+    	{720,780,535,580}, //EXIT
+    	{265,500,425,475}, //PRESS ENTER
+    	{270,530,240,272}, //RESUME
+    	{265,530,320,350}, //BACK TO MENU
+    	{140,365,180,350}, //MAP 1
+    	{440,665,180,350} //MAP 2
     };
 
-    public JLabel getLabel() { 
+    public Menu(Board board) {
+		super();
+		this.board = board;
+	}
+
+	public JLabel getLabel() { 
     	return this.label;
     }
     
@@ -47,5 +66,6 @@ public class Menu {
             Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
         }
     	g.drawImage(background, 0, 0, null);
+    	board.repaint();
 	}
 }

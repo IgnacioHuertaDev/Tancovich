@@ -11,8 +11,6 @@ import javax.imageio.ImageIO;
 
 public class Sprite {
 	
-	protected final int BOARD_WIDTH = 800;
-    protected final int BOARD_HEIGHT = 600;
     protected int x;
     protected int y;
     protected int r;
@@ -201,8 +199,8 @@ public class Sprite {
     			}
             }
     		//Fix explosiones fuera de imagen
-    		if(x > BOARD_WIDTH - getWidth()) x -= 1;
-    		if(y > BOARD_HEIGHT - getHeight()) y -= 1;
+    		if(x > Board.BOARD_WIDTH - getWidth()) x -= 1;
+    		if(y > Board.BOARD_HEIGHT - getHeight()) y -= 1;
     		explosionCounter++;
     	}
     	else

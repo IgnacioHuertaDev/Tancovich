@@ -12,7 +12,6 @@ public class Tank extends Sprite implements Entity{
     private int impacts = 0;
     private List<Missile> missiles;
     private List<Mine> mines;
-    private List<Hearts> heart;
     private boolean canForward = true;
     private boolean canBack = true;
     private boolean fireControl = false;
@@ -145,10 +144,6 @@ public class Tank extends Sprite implements Entity{
 		this.lifes = lifes;
 	}
 
-	public List<Hearts> getHeart() {
-		return heart;
-	}
-
 	public Box getCollisionedBox() {
 		return collisionedBox;
 	}
@@ -172,10 +167,6 @@ public class Tank extends Sprite implements Entity{
         
         missiles = new ArrayList<>();
         mines = new ArrayList<>();
-        heart = new ArrayList<>();
-        
-        drawHearts();
-
     }
     
     public void update() {
@@ -288,11 +279,6 @@ public class Tank extends Sprite implements Entity{
         	setTimer(0);
         }
 	}
-    
-    public void drawHearts() {
-    	if(getId() == 1) heart.add(new Hearts (80, 19, getId()));
-    	if (getId() == 2) heart.add(new Hearts (420, 19, getId()));
-    }
     
     public ArrayList<Integer> calculateNextPosition(boolean forward)
     {

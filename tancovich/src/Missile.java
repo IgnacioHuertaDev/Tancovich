@@ -32,19 +32,6 @@ public class Missile extends Sprite implements Entity{
 	    	{
 	    		x = x + (int)(Math.sin(Math.toRadians(-r)) * MISSILE_SPEED);
 	    		y = y + (int)(Math.cos(Math.toRadians(-r)) * MISSILE_SPEED);
-	
-	    		//Rebote contra laterales
-		        if (x < 0 || x > BOARD_WIDTH - getWidth())
-		        {
-		        	setR(-getR());
-		        	bounce++;
-		        }
-		        //Rebote superior e inferior
-		        if (y < 0 || y > BOARD_HEIGHT - getHeight())
-		        {
-		        	setR(180-getR());
-		        	bounce++;
-		        }
 	    	}
 	        
 	        if(bounce < 4)
